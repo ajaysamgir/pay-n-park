@@ -14,8 +14,8 @@ import org.springframework.web.context.request.WebRequest;
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
 
-	@ExceptionHandler({ SlotNotFoundException.class, InvalidCapacityException.class,
-			AllReadyInitializedException.class, SlotsNotInitializedException.class })
+	@ExceptionHandler({ SlotNotFoundException.class, InvalidCapacityException.class, AllReadyInitializedException.class,
+			SlotsNotInitializedException.class, PolicyIsNoFoundException.class })
 	@Nullable
 	public final ResponseEntity<CustomErrorHandler> handleException(Exception ex, WebRequest request) {
 		if (ex instanceof SlotNotFoundException) {
@@ -30,9 +30,21 @@ public class ApplicationExceptionHandler {
 		} else if (ex instanceof SlotsNotInitializedException) {
 			SlotsNotInitializedException exp = (SlotsNotInitializedException) ex;
 			return handleSlotsNotInitializedException(exp, request);
+		} else if (ex instanceof SlotsNotInitializedException) {
+			PolicyIsNoFoundException exp = (PolicyIsNoFoundException) ex;
+			return handlePolicyIsNoFoundException(exp, request);
 		} else {
 		}
 		return handleExceptionInternal(ex, request);
+	}
+
+	private ResponseEntity<CustomErrorHandler> handlePolicyIsNoFoundException(PolicyIsNoFoundException exp,
+			WebRequest request) {
+		List<String> details = new ArrayList<>();
+		details.add(exp.getMessage());
+		CustomErrorHandler error = new CustomErrorHandler(ErrorMessages.POLICY_NOT_FOUND, details, HttpStatus.NOT_FOUND,
+				new Date().toString());
+		return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
 	}
 
 	private ResponseEntity<CustomErrorHandler> handleSlotsNotInitializedException(SlotsNotInitializedException exp,

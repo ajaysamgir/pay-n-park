@@ -20,14 +20,18 @@ public class ParkingSlot {
 	@Column(name = "free", nullable = true)
 	private Boolean free;
 
+	@Column(name = "policy", nullable = false)
+	private String policy;
+
 	public ParkingSlot() {
 		super();
 	}
 
-	public ParkingSlot(String parkingSlotType, Boolean free) {
+	public ParkingSlot(String parkingSlotType, Boolean free, String policy) {
 		super();
 		this.parkingSlotType = parkingSlotType;
 		this.free = free;
+		this.policy = policy;
 	}
 
 	public Long getId() {
@@ -52,5 +56,13 @@ public class ParkingSlot {
 
 	public void setFree(Boolean free) {
 		this.free = free;
+	}
+
+	public String getPolicy() {
+		return policy;
+	}
+
+	public void setPolicy(String policy) {
+		this.policy = policy;
 	}
 }

@@ -1,7 +1,5 @@
 package com.example.parking.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,11 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingInitializer;
-import com.example.parking.dto.ParkingSlotDetails;
 import com.example.parking.dto.ParkingSlotDto;
-import com.example.parking.dto.VehicleDetails;
+import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.AllReadyInitializedException;
+import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.InvalidCapacityException;
 import com.example.parking.exception.SlotsNotInitializedException;
 import com.example.parking.model.ParkingBill;
@@ -33,16 +32,25 @@ public class ParkingTollController {
 	@Autowired
 	private ParkingTollService parkingTollService;
 
+	@Value("${parking.slotTypes}")
+	private String[] slotTypes;
+
+	@Value("${parking.policies}")
+	private String[] policies;
+
 	private static boolean isInitialized;
 
 	@PostMapping("/initialize")
 	public ResponseEntity<ParkingInitializer> initializeTollParking(@RequestBody ParkingInitializer parkingSlotConfig)
-			throws InvalidCapacityException, AllReadyInitializedException {
+			throws InvalidCapacityException, AllReadyInitializedException, PolicyIsNoFoundException {
 		if (!isInitialized) {
 			if (!validParkingCapacity(parkingSlotConfig)) {
 				throw new InvalidCapacityException(parkingSlotConfig.getTotalCapacity());
 			}
 
+			if (!policyMatch(parkingSlotConfig.getPolicy())) {
+				throw new PolicyIsNoFoundException();
+			}
 			Optional<ParkingInitializer> response = Optional
 					.ofNullable(parkingTollService.initialize(parkingSlotConfig));
 
@@ -56,19 +64,40 @@ public class ParkingTollController {
 			throw new AllReadyInitializedException();
 		}
 	}
-	
+
+	private boolean policyMatch(String policy) {
+		for (String p : policies) {
+			if (p.equalsIgnoreCase(policy)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@GetMapping("/slots")
 	public ResponseEntity<List<ParkingSlotDto>> getParkingSlotDetail() throws SlotsNotInitializedException {
 		Optional<List<ParkingSlotDto>> response = parkingTollService.getAllParkingSlots();
-		if(response.isEmpty()) {
+		if (response.isEmpty()) {
 			throw new SlotsNotInitializedException();
 		}
 		return ResponseEntity.ok(response.get());
 	}
 
-	@PostMapping("/enterparking")
-	public ResponseEntity<ParkingSlotDto> getParkingSlot(@RequestBody VehicleDetails vehicleDetails) throws Exception {
-		Optional<ParkingSlotDto> parkingSlot = parkingTollService.getAvailableParkingSlot(vehicleDetails);
+	@PostMapping("/applypolicy")
+	public ResponseEntity<ParkingSlotDto> getParkingSlot(@RequestBody PolicyDetails policyDetails) throws Exception {
+
+		Optional<ParkingSlotDto> parkingSlot = parkingTollService.applyPolicy(policyDetails);
+
+		if (parkingSlot.isPresent()) {
+			return ResponseEntity.ok(parkingSlot.get());
+		}
+		return ResponseEntity.notFound().build();
+	}
+
+	@PostMapping("/entry")
+	public ResponseEntity<ParkingSlotDto> getParkingSlot(@RequestBody CarDetails carDetails) throws Exception {
+
+		Optional<ParkingSlotDto> parkingSlot = parkingTollService.getAvailableParkingSlot(carDetails);
 
 		if (parkingSlot.isPresent()) {
 			return ResponseEntity.ok(parkingSlot.get());
@@ -92,10 +121,6 @@ public class ParkingTollController {
 		if (parkingBillResponse.isPresent())
 			return ResponseEntity.ok(parkingBillResponse.get());
 		return ResponseEntity.notFound().build();
-	}
-
-	private List<String> getAllTypes(@Value("${VehicleTypes}") String[] carTypes) {
-		return new ArrayList<>(Arrays.asList(carTypes));
 	}
 
 	private boolean validParkingCapacity(ParkingInitializer parkingSlotConfig) {

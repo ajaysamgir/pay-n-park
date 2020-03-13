@@ -10,15 +10,18 @@ public class ParkingSlotDto {
 
 	private Boolean free;
 
+	private String policy;
+
 	public ParkingSlotDto() {
 		super();
 	}
 
-	public ParkingSlotDto(Long id, String parkingSlotType, Boolean free) {
+	public ParkingSlotDto(Long id, String parkingSlotType, Boolean free, String policy) {
 		super();
 		this.id = id;
 		this.parkingSlotType = parkingSlotType;
 		this.free = free;
+		this.policy = policy;
 	}
 
 	public Long getId() {
@@ -45,9 +48,17 @@ public class ParkingSlotDto {
 		this.free = free;
 	}
 
+	public String getPolicy() {
+		return policy;
+	}
+
+	public void setPolicy(String policy) {
+		this.policy = policy;
+	}
+
 	public static ParkingSlotDto fromDomain(ParkingSlot parkingSlot) {
 		if (parkingSlot != null) {
-			return new ParkingSlotDto(parkingSlot.getId(), parkingSlot.getParkingSlotType(), parkingSlot.isFree());
+			return new ParkingSlotDto(parkingSlot.getId(), parkingSlot.getParkingSlotType(), parkingSlot.isFree(), parkingSlot.getPolicy());
 		}
 		return null;
 	}

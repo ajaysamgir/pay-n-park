@@ -9,6 +9,8 @@ public class ParkingInitializer {
 	private Integer electric50KWCar;
 
 	private Integer standardCar;
+	
+	private String policy;
 
 	public ParkingInitializer() {
 	}
@@ -50,5 +52,13 @@ public class ParkingInitializer {
 
 	public void setStandardCar(Integer standardCar) {
 		this.standardCar = standardCar;
+	}
+
+	public String getPolicy() {
+		return policy;
+	}
+
+	public void setPolicy(String policy) {
+		this.policy = policy;
 	}
 }

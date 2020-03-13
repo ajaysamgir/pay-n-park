@@ -1,6 +1,5 @@
 package com.example.parking.exception;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -9,12 +8,12 @@ public class CustomErrorHandler {
 	private String timestamp;
 	private String message;
 	private List<String> errorDetails;
-	private HttpStatus status; 
+	private HttpStatus status;
 
 	public CustomErrorHandler() {
 	}
 
-	public CustomErrorHandler(String message, List<String> details, HttpStatus status,  String date) {
+	public CustomErrorHandler(String message, List<String> details, HttpStatus status, String date) {
 		super();
 		this.timestamp = date;
 		this.message = message;
@@ -45,4 +44,13 @@ public class CustomErrorHandler {
 	public void setErrorDetails(List<String> errorDetails) {
 		this.errorDetails = errorDetails;
 	}
+
+	public HttpStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(HttpStatus status) {
+		this.status = status;
+	}
+
 }

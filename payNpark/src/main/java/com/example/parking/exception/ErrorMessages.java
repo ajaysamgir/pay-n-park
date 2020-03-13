@@ -9,4 +9,5 @@ public class ErrorMessages {
 	static final String SLOTS_ALREADY_INITIALIZED = "Parking Slots already initialized";
 	static final String INITILIZATION_DONE_BEFORE = "initialization already done";
 	static final String SLOT_NOT_INITIALIZED = "Slot is not allocated yet";
+	static final String POLICY_NOT_FOUND = "Policy is not found";
 }
