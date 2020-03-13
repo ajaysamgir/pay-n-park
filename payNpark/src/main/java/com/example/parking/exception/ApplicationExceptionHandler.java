@@ -15,7 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 public class ApplicationExceptionHandler {
 
 	@ExceptionHandler({ SlotNotFoundException.class, InvalidCapacityException.class,
-			AllReadyInitializedException.class })
+			AllReadyInitializedException.class, SlotsNotInitializedException.class })
 	@Nullable
 	public final ResponseEntity<CustomErrorHandler> handleException(Exception ex, WebRequest request) {
 		if (ex instanceof SlotNotFoundException) {
@@ -27,9 +27,21 @@ public class ApplicationExceptionHandler {
 		} else if (ex instanceof AllReadyInitializedException) {
 			AllReadyInitializedException exp = (AllReadyInitializedException) ex;
 			return handleAllReadyInitializedException(exp, request);
+		} else if (ex instanceof SlotsNotInitializedException) {
+			SlotsNotInitializedException exp = (SlotsNotInitializedException) ex;
+			return handleSlotsNotInitializedException(exp, request);
 		} else {
-			return handleExceptionInternal(ex, request);
 		}
+		return handleExceptionInternal(ex, request);
+	}
+
+	private ResponseEntity<CustomErrorHandler> handleSlotsNotInitializedException(SlotsNotInitializedException exp,
+			WebRequest request) {
+		List<String> details = new ArrayList<>();
+		details.add(exp.getMessage());
+		CustomErrorHandler error = new CustomErrorHandler(ErrorMessages.SLOTS_ALREADY_INITIALIZED, details,
+				HttpStatus.NOT_FOUND, new Date().toString());
+		return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
 	}
 
 	private ResponseEntity<CustomErrorHandler> handleAllReadyInitializedException(AllReadyInitializedException exp,

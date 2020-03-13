@@ -6,7 +6,7 @@ public class ParkingSlotDto {
 
 	private Long id;
 
-	private ParkingSlotType parkingSlotType;
+	private String parkingSlotType;
 
 	private Boolean free;
 
@@ -14,7 +14,7 @@ public class ParkingSlotDto {
 		super();
 	}
 
-	public ParkingSlotDto(Long id, ParkingSlotType parkingSlotType, Boolean free) {
+	public ParkingSlotDto(Long id, String parkingSlotType, Boolean free) {
 		super();
 		this.id = id;
 		this.parkingSlotType = parkingSlotType;
@@ -29,11 +29,11 @@ public class ParkingSlotDto {
 		this.id = id;
 	}
 
-	public ParkingSlotType getParkingSlotType() {
+	public String getParkingSlotType() {
 		return parkingSlotType;
 	}
 
-	public void setParkingSlotType(ParkingSlotType parkingSlotType) {
+	public void setParkingSlotType(String parkingSlotType) {
 		this.parkingSlotType = parkingSlotType;
 	}
 

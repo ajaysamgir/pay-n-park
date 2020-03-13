@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.parking.dto.ParkingInitializer;
+import com.example.parking.dto.ParkingSlotDetails;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.VehicleDetails;
 import com.example.parking.exception.AllReadyInitializedException;
 import com.example.parking.exception.InvalidCapacityException;
+import com.example.parking.exception.SlotsNotInitializedException;
 import com.example.parking.model.ParkingBill;
 import com.example.parking.model.PricingPolicy;
 import com.example.parking.service.ParkingTollService;
@@ -53,6 +55,15 @@ public class ParkingTollController {
 		} else {
 			throw new AllReadyInitializedException();
 		}
+	}
+	
+	@GetMapping("/slots")
+	public ResponseEntity<List<ParkingSlotDto>> getParkingSlotDetail() throws SlotsNotInitializedException {
+		Optional<List<ParkingSlotDto>> response = parkingTollService.getAllParkingSlots();
+		if(response.isEmpty()) {
+			throw new SlotsNotInitializedException();
+		}
+		return ResponseEntity.ok(response.get());
 	}
 
 	@PostMapping("/enterparking")
@@ -88,8 +99,8 @@ public class ParkingTollController {
 	}
 
 	private boolean validParkingCapacity(ParkingInitializer parkingSlotConfig) {
-		if ((parkingSlotConfig.geteCar20KWSlotSize() + parkingSlotConfig.geteCar50KWSlotSize()
-				+ parkingSlotConfig.getStdCarSlotSize()) > parkingSlotConfig.getTotalCapacity()) {
+		if ((parkingSlotConfig.getElectric20KWCar() + parkingSlotConfig.getElectric50KWCar()
+				+ parkingSlotConfig.getStandardCar()) > parkingSlotConfig.getTotalCapacity()) {
 			return false;
 		}
 		return true;

@@ -1,20 +1,16 @@
 package com.example.parking.service;
 
-import java.security.Policy;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import org.springframework.beans.factory.annotation.Value;
-
+import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.ParkingSlotType;
-import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.VehicleDetails;
 import com.example.parking.model.ParkingBill;
 import com.example.parking.model.ParkingSlot;
@@ -64,24 +60,38 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 	@Override
 	public ParkingInitializer initialize(ParkingInitializer tollParkingInitializer) {
 		if (!initialized) {
-			int numberOfStdParkingSlot = tollParkingInitializer.getStdCarSlotSize();
-			int numberOfECar20KWParkingSlot = tollParkingInitializer.geteCar20KWSlotSize();
-			int numberOfECar50KWParkingSlot = tollParkingInitializer.geteCar50KWSlotSize();
-			
-			IntStream.rangeClosed(1, numberOfStdParkingSlot)
-					.forEach(i -> parkingSlotRepository.save(new ParkingSlot(ParkingSlotType.STANDARD, true)));
-			IntStream.rangeClosed(1, numberOfECar20KWParkingSlot)
-					.forEach(i -> parkingSlotRepository.save(new ParkingSlot(ParkingSlotType.ELECTRIC_CAR_20KW, true)));
-			IntStream.rangeClosed(1, numberOfECar50KWParkingSlot)
-					.forEach(i -> parkingSlotRepository.save(new ParkingSlot(ParkingSlotType.ELECTRIC_CAR_50KW, true)));
 
-			//updatePricingPolicy(tollParkingInitializer.getFixedAmount(), tollParkingInitializer.getHourPrice());
-			initialized = true;
+			int countOfStandardCarSlot = tollParkingInitializer.getStandardCar();
+			int countOfE20KWCarSlot = tollParkingInitializer.getElectric20KWCar();
+			int countOfE50KWCarSlot = tollParkingInitializer.getElectric50KWCar();
+
+			IntStream.rangeClosed(1, countOfStandardCarSlot)
+					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Standard", true)));
+			IntStream.rangeClosed(1, countOfE20KWCarSlot)
+					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Electric20KW", true)));
+			IntStream.rangeClosed(1, countOfE50KWCarSlot)
+					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Electric50KW", true)));
+
+			// updatePricingPolicy(tollParkingInitializer.getFixedAmount(),
+			// tollParkingInitializer.getHourPrice());
+			// initialized = true;
 
 			return tollParkingInitializer;
 		}
 
 		return null;
+	}
+
+	@Override
+	public Optional<List<ParkingSlotDto>> getAllParkingSlots() {
+		List<ParkingSlot> parkingSlots = parkingSlotRepository.findAll();
+		if (!parkingSlots.isEmpty()) {
+			List<ParkingSlotDto> listOfParkingSlots = new ArrayList<ParkingSlotDto>();
+			parkingSlots.forEach(parkingSlot -> listOfParkingSlots.add(ParkingSlotDto.fromDomain(parkingSlot)));
+			return Optional.of(listOfParkingSlots);
+		}
+
+		return Optional.empty();
 	}
 
 	public synchronized Optional<ParkingBill> leaveParking(String vehicleNo) {

@@ -7,8 +7,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.example.parking.dto.ParkingSlotType;
-
 @Entity
 @Table(name = "ParkingSlots")
 public class ParkingSlot {
@@ -16,16 +14,17 @@ public class ParkingSlot {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	private ParkingSlotType parkingSlotType;
+	@Column(name = "type", nullable = false)
+	private String parkingSlotType;
 
-	@Column(name="free", nullable=true)
+	@Column(name = "free", nullable = true)
 	private Boolean free;
 
 	public ParkingSlot() {
 		super();
 	}
 
-	public ParkingSlot(ParkingSlotType parkingSlotType, Boolean free) {
+	public ParkingSlot(String parkingSlotType, Boolean free) {
 		super();
 		this.parkingSlotType = parkingSlotType;
 		this.free = free;
@@ -39,11 +38,11 @@ public class ParkingSlot {
 		this.id = id;
 	}
 
-	public ParkingSlotType getParkingSlotType() {
+	public String getParkingSlotType() {
 		return parkingSlotType;
 	}
 
-	public void setParkingSlotType(ParkingSlotType parkingSlotType) {
+	public void setParkingSlotType(String parkingSlotType) {
 		this.parkingSlotType = parkingSlotType;
 	}
 

@@ -1,24 +1,22 @@
 package com.example.parking.dto;
 
-import javax.validation.constraints.Size;
-
 public class ParkingInitializer {
 
 	private Integer totalCapacity;
 
-	private Integer eCar20KWSlotSize;
+	private Integer electric20KWCar;
 
-	private Integer eCar50KWSlotSize;
+	private Integer electric50KWCar;
 
-	private Integer stdCarSlotSize;
+	private Integer standardCar;
 
 	public ParkingInitializer() {
 	}
 
 	public ParkingInitializer(int e20kw, int e50wk, int std, int capacity) {
-		this.eCar20KWSlotSize = e20kw;
-		this.eCar50KWSlotSize = e50wk;
-		this.stdCarSlotSize = std;
+		this.electric20KWCar = e20kw;
+		this.electric50KWCar = e50wk;
+		this.standardCar = std;
 		this.totalCapacity = capacity;
 	}
 
@@ -30,28 +28,27 @@ public class ParkingInitializer {
 		this.totalCapacity = totalCapacity;
 	}
 
-	public Integer geteCar20KWSlotSize() {
-		return eCar20KWSlotSize;
+	public Integer getElectric20KWCar() {
+		return electric20KWCar;
 	}
 
-	public void seteCar20KWSlotSize(Integer eCar20KWSlotSize) {
-		this.eCar20KWSlotSize = eCar20KWSlotSize;
+	public void setElectric20KWCar(Integer electric20kwCar) {
+		electric20KWCar = electric20kwCar;
 	}
 
-	public Integer geteCar50KWSlotSize() {
-		return eCar50KWSlotSize;
+	public Integer getElectric50KWCar() {
+		return electric50KWCar;
 	}
 
-	public void seteCar50KWSlotSize(Integer eCar50KWSlotSize) {
-		this.eCar50KWSlotSize = eCar50KWSlotSize;
+	public void setElectric50KWCar(Integer electric50kwCar) {
+		electric50KWCar = electric50kwCar;
 	}
 
-	public Integer getStdCarSlotSize() {
-		return stdCarSlotSize;
+	public Integer getStandardCar() {
+		return standardCar;
 	}
 
-	public void setStdCarSlotSize(Integer stdCarSlotSize) {
-		this.stdCarSlotSize = stdCarSlotSize;
+	public void setStandardCar(Integer standardCar) {
+		this.standardCar = standardCar;
 	}
-
 }
