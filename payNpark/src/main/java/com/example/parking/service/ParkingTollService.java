@@ -4,20 +4,20 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.example.parking.config.TollParkingInitializer;
+import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.ParkingSlotType;
+import com.example.parking.dto.VehicleDetails;
 import com.example.parking.model.ParkingBill;
-import com.example.parking.model.PricingPolicy;
 
 @Service
 public interface ParkingTollService {
 
-	Optional<ParkingSlotDto> getAvailableParkingSlot(String vehicleNo);
+	Optional<ParkingSlotDto> getAvailableParkingSlot(VehicleDetails vehicleDetails);
 	
 	ParkingSlotType retrieveParkingSlotType(String vehicleNo);
 
-	TollParkingInitializer initialize(TollParkingInitializer tollParkingConfig);
+	ParkingInitializer initialize(ParkingInitializer tollParkingConfig);
 	
 	Optional<ParkingBill> leaveParking(String plateNumber);
 

@@ -3,13 +3,19 @@ package com.example.parking.service;
 import java.security.Policy;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import com.example.parking.config.TollParkingInitializer;
+import org.springframework.beans.factory.annotation.Value;
+
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.ParkingSlotType;
+import com.example.parking.dto.ParkingInitializer;
+import com.example.parking.dto.VehicleDetails;
 import com.example.parking.model.ParkingBill;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.model.PricingPolicy;
@@ -33,8 +39,8 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 	}
 
 	@Override
-	public Optional<ParkingSlotDto> getAvailableParkingSlot(String vehicleNo) {
-		ParkingSlotType parkingSlotType = retrieveParkingSlotType(vehicleNo);
+	public Optional<ParkingSlotDto> getAvailableParkingSlot(VehicleDetails vehicleDetails) {
+		ParkingSlotType parkingSlotType = retrieveParkingSlotType(vehicleDetails.getVehicleNo());
 		synchronized (ParkingTollServiceImpl.class) {
 			Optional<ParkingSlot> firstParkingSlot = parkingSlotRepository.findAll().stream()
 					.filter(ps -> ps.getParkingSlotType().equals(parkingSlotType) && ps.isFree()).findFirst();
@@ -56,19 +62,20 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 	}
 
 	@Override
-	public TollParkingInitializer initialize(TollParkingInitializer tollParkingInitializer) {
+	public ParkingInitializer initialize(ParkingInitializer tollParkingInitializer) {
 		if (!initialized) {
-			int numberOfStandardParkingSlot = tollParkingInitializer.getElectricCarStandardParkingSlotSize();
-			int numberOfElectricCar20KWParkingSlot = tollParkingInitializer.getElectricCar20KWParkingSlotSize();
-			int numberOfElectricCar50KWParkingSlot = tollParkingInitializer.getElectricCar50KWParkingSlotSize();
-			IntStream.rangeClosed(1, numberOfStandardParkingSlot)
+			int numberOfStdParkingSlot = tollParkingInitializer.getStdCarSlotSize();
+			int numberOfECar20KWParkingSlot = tollParkingInitializer.geteCar20KWSlotSize();
+			int numberOfECar50KWParkingSlot = tollParkingInitializer.geteCar50KWSlotSize();
+			
+			IntStream.rangeClosed(1, numberOfStdParkingSlot)
 					.forEach(i -> parkingSlotRepository.save(new ParkingSlot(ParkingSlotType.STANDARD, true)));
-			IntStream.rangeClosed(1, numberOfElectricCar20KWParkingSlot)
+			IntStream.rangeClosed(1, numberOfECar20KWParkingSlot)
 					.forEach(i -> parkingSlotRepository.save(new ParkingSlot(ParkingSlotType.ELECTRIC_CAR_20KW, true)));
-			IntStream.rangeClosed(1, numberOfElectricCar50KWParkingSlot)
+			IntStream.rangeClosed(1, numberOfECar50KWParkingSlot)
 					.forEach(i -> parkingSlotRepository.save(new ParkingSlot(ParkingSlotType.ELECTRIC_CAR_50KW, true)));
 
-			updatePricingPolicy(tollParkingInitializer.getFixedAmount(), tollParkingInitializer.getHourPrice());
+			//updatePricingPolicy(tollParkingInitializer.getFixedAmount(), tollParkingInitializer.getHourPrice());
 			initialized = true;
 
 			return tollParkingInitializer;
@@ -110,5 +117,4 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 	private double parkingHours(ParkingBill parkingBill) {
 		return parkingBill.getStartTime().until(parkingBill.getEndTime(), ChronoUnit.HOURS);
 	}
-
 }
