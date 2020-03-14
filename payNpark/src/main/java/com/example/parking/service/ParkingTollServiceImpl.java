@@ -13,6 +13,9 @@ import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.ParkingSlotType;
 import com.example.parking.dto.PolicyDetails;
+import com.example.parking.exception.CarEntryAllreayExistException;
+import com.example.parking.exception.ErrorMessages;
+import com.example.parking.exception.SlotNotFoundException;
 import com.example.parking.model.ParkingBill;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.model.PricingPolicy;
@@ -36,20 +39,33 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 	}
 
 	@Override
-	public Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails) {
-		ParkingSlotType parkingSlotType = retrieveParkingSlotType(carDetails.getNumber());
+	public Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails) throws SlotNotFoundException, CarEntryAllreayExistException {
+		String slotType = carDetails.getCarType();
+		
+		if(validateExistingEntry(carDetails.getCarNumber())) {
+			throw new CarEntryAllreayExistException(ErrorMessages.CAR_ENTRY_EXIST + ":" + carDetails.getCarNumber());
+		}
+		
 		synchronized (ParkingTollServiceImpl.class) {
 			Optional<ParkingSlot> firstParkingSlot = parkingSlotRepository.findAll().stream()
-					.filter(ps -> ps.getParkingSlotType().equals(parkingSlotType) && ps.isFree()).findFirst();
+					.filter(ps -> ps.getParkingSlotType().equalsIgnoreCase(slotType) && ps.isFree()).findFirst();
 			if (firstParkingSlot.isPresent()) {
 				ParkingSlot parkingSlot = firstParkingSlot.get();
 				parkingSlot.setFree(false);
+				parkingSlot.setParkedCar(carDetails.getCarNumber());
 				parkingSlotRepository.save(parkingSlot);
 				return Optional.of(ParkingSlotDto.fromDomain(firstParkingSlot.get()));
 			}
-
-			return Optional.empty();
+			throw new SlotNotFoundException(ErrorMessages.SLOT_IS_FULL + " or " + ErrorMessages.APP_NOT_INITIATED);
 		}
+	}
+
+	private boolean validateExistingEntry(String carNumber) {
+		Optional<ParkingSlot> availableEntry = parkingSlotRepository.findByParkedCar(carNumber);
+		if(availableEntry.isPresent()) {
+			return true;
+		}
+		return false;
 	}
 
 	public ParkingSlotType retrieveParkingSlotType(String vehicleNo) {
@@ -72,10 +88,6 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Electric20KW", true, defaultPolicy)));
 			IntStream.rangeClosed(1, countOfE50KWCarSlot)
 					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Electric50KW", true, defaultPolicy)));
-
-			// updatePricingPolicy(tollParkingInitializer.getFixedAmount(),
-			// tollParkingInitializer.getHourPrice());
-			// initialized = true;
 
 			return tollParkingInitializer;
 		}
@@ -130,9 +142,14 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 	}
 
 	@Override
-	public Optional<ParkingSlotDto> applyPolicy(PolicyDetails policyDetails) {
+	public Optional<ParkingSlotDto> applyPolicy(PolicyDetails policyDetails) throws SlotNotFoundException {
 		Optional<ParkingSlot> parkingSlot = parkingSlotRepository.findAll().stream()
 				.filter(p -> p.getId() == policyDetails.getParkingSlotNo()).findFirst();
-		return null;
+		if(parkingSlot.isPresent()) {
+			parkingSlot.get().setPolicy(policyDetails.getPolicyType());
+			parkingSlotRepository.save(parkingSlot.get());
+			return Optional.of(ParkingSlotDto.fromDomain(parkingSlot.get()));
+		}
+		throw new SlotNotFoundException(ErrorMessages.SLOT_IS_NOT_FOUND);
 	}
 }

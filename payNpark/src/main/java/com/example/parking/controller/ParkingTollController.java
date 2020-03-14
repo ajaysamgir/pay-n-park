@@ -3,6 +3,8 @@ package com.example.parking.controller;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -84,8 +86,12 @@ public class ParkingTollController {
 	}
 
 	@PostMapping("/applypolicy")
-	public ResponseEntity<ParkingSlotDto> getParkingSlot(@RequestBody PolicyDetails policyDetails) throws Exception {
+	public ResponseEntity<ParkingSlotDto> applyPolicyOnParkingSlot(@RequestBody PolicyDetails policyDetails)
+			throws Exception {
 
+		if (!validatePolicy(policyDetails.getPolicyType())) {
+			throw new PolicyIsNoFoundException();
+		}
 		Optional<ParkingSlotDto> parkingSlot = parkingTollService.applyPolicy(policyDetails);
 
 		if (parkingSlot.isPresent()) {
@@ -95,7 +101,7 @@ public class ParkingTollController {
 	}
 
 	@PostMapping("/entry")
-	public ResponseEntity<ParkingSlotDto> getParkingSlot(@RequestBody CarDetails carDetails) throws Exception {
+	public ResponseEntity<ParkingSlotDto> getParkingSlot(@Valid @RequestBody CarDetails carDetails) throws Exception {
 
 		Optional<ParkingSlotDto> parkingSlot = parkingTollService.getAvailableParkingSlot(carDetails);
 
@@ -105,19 +111,9 @@ public class ParkingTollController {
 		return ResponseEntity.notFound().build();
 	}
 
-	@PutMapping("/pricingpolicy")
-	public ResponseEntity<PricingPolicy> updatePricingPolicy(@RequestBody PricingPolicy pricingPolicy)
-			throws Exception {
-		if (parkingTollService.updatePricingPolicy(pricingPolicy.getFixedAmount(), pricingPolicy.getHourPrice())) {
-			return ResponseEntity.ok(pricingPolicy);
-		} else {
-			return ResponseEntity.notFound().build();
-		}
-	}
-
-	@GetMapping("/leaveparking/{vehicleNo}")
-	public ResponseEntity<ParkingBill> leaveParking(@PathVariable("vehicleNo") String plateNumber) throws Exception {
-		Optional<ParkingBill> parkingBillResponse = parkingTollService.leaveParking(plateNumber);
+	@GetMapping("/exit/{vehicleNo}")
+	public ResponseEntity<ParkingBill> leaveParking(@PathVariable("vehicleNo") String carNumber) throws Exception {
+		Optional<ParkingBill> parkingBillResponse = parkingTollService.leaveParking(carNumber);
 		if (parkingBillResponse.isPresent())
 			return ResponseEntity.ok(parkingBillResponse.get());
 		return ResponseEntity.notFound().build();
@@ -130,4 +126,15 @@ public class ParkingTollController {
 		}
 		return true;
 	}
+
+	private boolean validatePolicy(String policyType) {
+
+		for (String policy : policies) {
+			if (policy.equalsIgnoreCase(policyType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

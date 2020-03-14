@@ -1,24 +1,32 @@
 package com.example.parking.dto;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 public class CarDetails {
 
-	String number;
-	
-	String type;
+	@NotNull
+	@NotEmpty
+	String carNumber;
 
-	public String getNumber() {
-		return number;
+	@NotNull
+	@NotEmpty
+	String carType;
+
+	public String getCarNumber() {
+		return carNumber;
 	}
 
-	public void setNumber(String number) {
-		this.number = number;
+	public void setCarNumber(String carNumber) {
+		this.carNumber = carNumber;
 	}
 
-	public String getType() {
-		return type;
+	public String getCarType() {
+		return carType;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setCarType(String carType) {
+		this.carType = carType;
 	}
+
 }

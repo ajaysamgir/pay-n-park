@@ -22,6 +22,9 @@ public class ParkingSlot {
 
 	@Column(name = "policy", nullable = false)
 	private String policy;
+	
+	@Column(name = "parkedCar", nullable = true)
+	private String parkedCar;
 
 	public ParkingSlot() {
 		super();
@@ -65,4 +68,14 @@ public class ParkingSlot {
 	public void setPolicy(String policy) {
 		this.policy = policy;
 	}
+
+	public String getParkedCar() {
+		return parkedCar;
+	}
+
+	public void setParkedCar(String parkedCar) {
+		this.parkedCar = parkedCar;
+	}
+	
+	
 }

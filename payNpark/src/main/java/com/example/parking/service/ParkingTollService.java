@@ -10,12 +10,14 @@ import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.ParkingSlotType;
 import com.example.parking.dto.PolicyDetails;
+import com.example.parking.exception.CarEntryAllreayExistException;
+import com.example.parking.exception.SlotNotFoundException;
 import com.example.parking.model.ParkingBill;
 
 @Service
 public interface ParkingTollService {
 
-	Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails);
+	Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails) throws SlotNotFoundException, CarEntryAllreayExistException;
 
 	ParkingSlotType retrieveParkingSlotType(String vehicleNo);
 
@@ -27,5 +29,5 @@ public interface ParkingTollService {
 
 	Optional<List<ParkingSlotDto>> getAllParkingSlots();
 
-	Optional<ParkingSlotDto> applyPolicy(PolicyDetails policyDetails);
+	Optional<ParkingSlotDto> applyPolicy(PolicyDetails policyDetails) throws SlotNotFoundException;
 }

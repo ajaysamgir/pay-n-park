@@ -15,7 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 public class ApplicationExceptionHandler {
 
 	@ExceptionHandler({ SlotNotFoundException.class, InvalidCapacityException.class, AllReadyInitializedException.class,
-			SlotsNotInitializedException.class, PolicyIsNoFoundException.class })
+			SlotsNotInitializedException.class, PolicyIsNoFoundException.class, CarEntryAllreayExistException.class })
 	@Nullable
 	public final ResponseEntity<CustomErrorHandler> handleException(Exception ex, WebRequest request) {
 		if (ex instanceof SlotNotFoundException) {
@@ -30,12 +30,24 @@ public class ApplicationExceptionHandler {
 		} else if (ex instanceof SlotsNotInitializedException) {
 			SlotsNotInitializedException exp = (SlotsNotInitializedException) ex;
 			return handleSlotsNotInitializedException(exp, request);
-		} else if (ex instanceof SlotsNotInitializedException) {
+		} else if (ex instanceof PolicyIsNoFoundException) {
 			PolicyIsNoFoundException exp = (PolicyIsNoFoundException) ex;
 			return handlePolicyIsNoFoundException(exp, request);
+		} else if (ex instanceof CarEntryAllreayExistException) {
+			CarEntryAllreayExistException exp = (CarEntryAllreayExistException) ex;
+			return handleCarEntryAllreayExistException(exp, request);
 		} else {
+			return handleExceptionInternal(ex, request);
 		}
-		return handleExceptionInternal(ex, request);
+	}
+
+	private ResponseEntity<CustomErrorHandler> handleCarEntryAllreayExistException(CarEntryAllreayExistException exp,
+			WebRequest request) {
+		List<String> details = new ArrayList<>();
+		details.add(exp.getMessage());
+		CustomErrorHandler error = new CustomErrorHandler(ErrorMessages.CAR_ENTRY_EXIST, details,
+				HttpStatus.ALREADY_REPORTED, new Date().toString());
+		return new ResponseEntity<>(error, HttpStatus.ALREADY_REPORTED);
 	}
 
 	private ResponseEntity<CustomErrorHandler> handlePolicyIsNoFoundException(PolicyIsNoFoundException exp,
