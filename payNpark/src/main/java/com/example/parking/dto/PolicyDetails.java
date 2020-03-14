@@ -5,6 +5,8 @@ public class PolicyDetails {
 	private String policyType;
 	
 	private Long parkingSlotNo;
+	
+	private double rate;
 
 	public String getPolicyType() {
 		return policyType;
@@ -20,5 +22,13 @@ public class PolicyDetails {
 
 	public void setParkingSlotNo(Long parkingSlotNo) {
 		this.parkingSlotNo = parkingSlotNo;
+	}
+
+	public double getRate() {
+		return rate;
+	}
+
+	public void setRate(double rate) {
+		this.rate = rate;
 	}
 }

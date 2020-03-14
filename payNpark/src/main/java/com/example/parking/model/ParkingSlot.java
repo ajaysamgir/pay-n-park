@@ -1,6 +1,5 @@
 package com.example.parking.model;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -25,22 +24,30 @@ public class ParkingSlot {
 
 	@Column(name = "policy", nullable = false)
 	private String policy;
-	
+
 	@Column(name = "parkedCar", nullable = true)
 	private String parkedCar;
-	
+
 	@Column(name = "parkingTime", nullable = true)
 	private LocalDateTime parkingTime;
+
+	@Column(name = "rentPerHour", nullable = true)
+	private double rentPerHour;
+
+	@Column(name = "FixAmountRate", nullable = true)
+	private double fixedAmount;
 
 	public ParkingSlot() {
 		super();
 	}
 
-	public ParkingSlot(String parkingSlotType, Boolean free, String policy) {
+	public ParkingSlot(String parkingSlotType, Boolean free, String policy, double rentPerHr, double fixedRate) {
 		super();
 		this.parkingSlotType = parkingSlotType;
 		this.free = free;
 		this.policy = policy;
+		this.rentPerHour = rentPerHr;
+		this.fixedAmount = fixedRate;
 	}
 
 	public Long getId() {
@@ -94,4 +101,21 @@ public class ParkingSlot {
 	public Boolean getFree() {
 		return free;
 	}
+
+	public double getRentPerHour() {
+		return rentPerHour;
+	}
+
+	public void setRentPerHour(double rentPerHour) {
+		this.rentPerHour = rentPerHour;
+	}
+
+	public double getFixedAmount() {
+		return fixedAmount;
+	}
+
+	public void setFixedAmount(double fixedAmount) {
+		this.fixedAmount = fixedAmount;
+	}
+
 }

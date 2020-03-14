@@ -14,17 +14,23 @@ public class ParkingSlotDto {
 
 	private String parkedCar;
 
+	private double rentPerHour;
+
+	private double fixedAmount;
+
 	public ParkingSlotDto() {
 		super();
 	}
 
-	public ParkingSlotDto(Long id, String parkingSlotType, Boolean free, String policy, String parkedCar) {
+	public ParkingSlotDto(Long id, String parkingSlotType, Boolean free, String policy, String parkedCar, double rentPerHour, double fixedRate) {
 		super();
 		this.id = id;
 		this.parkingSlotType = parkingSlotType;
 		this.free = free;
 		this.policy = policy;
 		this.parkedCar = parkedCar;
+		this.rentPerHour = rentPerHour;
+		this.fixedAmount = fixedRate;
 	}
 
 	public Long getId() {
@@ -59,13 +65,7 @@ public class ParkingSlotDto {
 		this.policy = policy;
 	}
 
-	public static ParkingSlotDto fromDomain(ParkingSlot parkingSlot) {
-		if (parkingSlot != null) {
-			return new ParkingSlotDto(parkingSlot.getId(), parkingSlot.getParkingSlotType(), parkingSlot.isFree(),
-					parkingSlot.getPolicy(), parkingSlot.getParkedCar());
-		}
-		return null;
-	}
+	
 
 	public String getParkedCar() {
 		return parkedCar;
@@ -73,10 +73,35 @@ public class ParkingSlotDto {
 
 	public void setParkedCar(String parkedCar) {
 		if (parkedCar == null || parkedCar.isEmpty()) {
-			parkedCar = "none";
+			this.parkedCar = "none";
+		}
+		else {
+			this.parkedCar = parkedCar;
 		}
 		
-		this.parkedCar = parkedCar;
 	}
 
+	public double getRentPerHour() {
+		return rentPerHour;
+	}
+
+	public void setRentPerHour(double rentPerHour) {
+		this.rentPerHour = rentPerHour;
+	}
+
+	public double getFixedAmount() {
+		return fixedAmount;
+	}
+
+	public void setFixedAmount(double fixedAmount) {
+		this.fixedAmount = fixedAmount;
+	}
+
+	public static ParkingSlotDto fromDomain(ParkingSlot parkingSlot) {
+		if (parkingSlot != null) {
+			return new ParkingSlotDto(parkingSlot.getId(), parkingSlot.getParkingSlotType(), parkingSlot.isFree(),
+					parkingSlot.getPolicy(), parkingSlot.getParkedCar(), parkingSlot.getRentPerHour(), parkingSlot.getFixedAmount());
+		}
+		return null;
+	}
 }

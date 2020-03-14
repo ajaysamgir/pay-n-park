@@ -16,7 +16,7 @@ public class ApplicationExceptionHandler {
 
 	@ExceptionHandler({ SlotNotFoundException.class, InvalidCapacityException.class, AllReadyInitializedException.class,
 			SlotsNotInitializedException.class, PolicyIsNoFoundException.class, CarEntryAllreayExistException.class,
-			CarNotFoundInSlotException.class })
+			CarNotFoundInSlotException.class, InvalidCarTypeException.class })
 	@Nullable
 	public final ResponseEntity<CustomErrorHandler> handleException(Exception ex, WebRequest request) {
 		if (ex instanceof SlotNotFoundException) {
@@ -37,9 +37,20 @@ public class ApplicationExceptionHandler {
 		} else if (ex instanceof CarEntryAllreayExistException) {
 			CarEntryAllreayExistException exp = (CarEntryAllreayExistException) ex;
 			return handleCarEntryAllreayExistException(exp, request);
+		} else if (ex instanceof InvalidCarTypeException) {
+			InvalidCarTypeException exp = (InvalidCarTypeException) ex;
+			return handleInvalidCarTypeException(exp, request);
 		} else {
 			return handleExceptionInternal(ex, request);
 		}
+	}
+
+	private ResponseEntity<CustomErrorHandler> handleInvalidCarTypeException(InvalidCarTypeException exp, WebRequest request) {
+		List<String> details = new ArrayList<>();
+		details.add(exp.getMessage());
+		CustomErrorHandler error = new CustomErrorHandler(ErrorMessages.INVALID_CAR_TYPE, details,
+				HttpStatus.NOT_FOUND, new Date().toString());
+		return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
 	}
 
 	private ResponseEntity<CustomErrorHandler> handleCarEntryAllreayExistException(CarEntryAllreayExistException exp,

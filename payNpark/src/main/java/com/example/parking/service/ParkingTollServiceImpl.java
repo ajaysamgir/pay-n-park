@@ -18,6 +18,7 @@ import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.CarEntryAllreayExistException;
 import com.example.parking.exception.CarNotFoundInSlotException;
 import com.example.parking.exception.ErrorMessages;
+import com.example.parking.exception.InvalidCarTypeException;
 import com.example.parking.exception.SlotNotFoundException;
 import com.example.parking.model.ParkingBill;
 import com.example.parking.model.ParkingSlot;
@@ -40,16 +41,19 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 
 	@Override
 	public Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails)
-			throws SlotNotFoundException, CarEntryAllreayExistException {
-		String slotType = carDetails.getCarType();
+			throws SlotNotFoundException, CarEntryAllreayExistException, InvalidCarTypeException {
+		String carType = carDetails.getCarType();
 
+		if(invalidCarType(carType)) {
+			throw new InvalidCarTypeException(ErrorMessages.INVALID_CAR_TYPE);
+		}
 		if (validateExistingEntry(carDetails.getCarNumber())) {
 			throw new CarEntryAllreayExistException(ErrorMessages.CAR_ENTRY_EXIST + ":" + carDetails.getCarNumber());
 		}
 
 		synchronized (ParkingTollServiceImpl.class) {
 			Optional<ParkingSlot> firstParkingSlot = parkingSlotRepository.findAll().stream()
-					.filter(ps -> ps.getParkingSlotType().equalsIgnoreCase(slotType) && ps.isFree()).findFirst();
+					.filter(ps -> ps.getParkingSlotType().equalsIgnoreCase(carType) && ps.isFree()).findFirst();
 			if (firstParkingSlot.isPresent()) {
 				ParkingSlot parkingSlot = firstParkingSlot.get();
 				parkingSlot.setFree(false);
@@ -59,6 +63,11 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 			}
 			throw new SlotNotFoundException(ErrorMessages.SLOT_IS_FULL + " or " + ErrorMessages.APP_NOT_INITIATED);
 		}
+	}
+
+	private boolean invalidCarType(String carType) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	private boolean validateExistingEntry(String carNumber) {
@@ -82,13 +91,15 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 			int countOfE20KWCarSlot = tollParkingInitializer.getElectric20KWCar();
 			int countOfE50KWCarSlot = tollParkingInitializer.getElectric50KWCar();
 			String defaultPolicy = tollParkingInitializer.getPolicy();
+			double rentPerHour = tollParkingInitializer.getRentPerHour();
+			double fixedRateAmt = tollParkingInitializer.getFixedRateAmount();
 
-			IntStream.rangeClosed(1, countOfStandardCarSlot)
-					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Standard", true, defaultPolicy)));
-			IntStream.rangeClosed(1, countOfE20KWCarSlot)
-					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Electric20KW", true, defaultPolicy)));
-			IntStream.rangeClosed(1, countOfE50KWCarSlot)
-					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Electric50KW", true, defaultPolicy)));
+			IntStream.rangeClosed(1, countOfStandardCarSlot).forEach(i -> parkingSlotRepository
+					.save(new ParkingSlot("Standard", true, defaultPolicy, rentPerHour, fixedRateAmt)));
+			IntStream.rangeClosed(1, countOfE20KWCarSlot).forEach(i -> parkingSlotRepository
+					.save(new ParkingSlot("Electric20KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
+			IntStream.rangeClosed(1, countOfE50KWCarSlot).forEach(i -> parkingSlotRepository
+					.save(new ParkingSlot("Electric50KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
 
 			return tollParkingInitializer;
 		}
@@ -120,6 +131,8 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 			bill.setEndTime(LocalDateTime.now());
 			parkingSlotRepository.findById(parkingSlot.get().getId()).get().setFree(true);
 			bill = generateParkingBill(bill, parkingSlot.get().getPolicy());
+			parkingSlotRepository.save(parkingSlot.get());
+			parkingBillRepository.save(bill);
 			return Optional.of(bill);
 		}
 		throw new CarNotFoundInSlotException(ErrorMessages.CAR_NUMBER_NOT_FOUND_IN_SLOT);
@@ -141,14 +154,14 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 		switch (policy) {
 		case "Fixed":
 			double amt = 10 * parkingHours(parkingBill.getStartTime(), parkingBill.getEndTime());
-			parkingBill.setPrice(amt);
+			parkingBill.setTotalBill(amt);
 			break;
 		case "Hourly":
 			double amount = 10 * parkingHours(parkingBill.getStartTime(), parkingBill.getEndTime());
-			parkingBill.setPrice(amount);
+			parkingBill.setTotalBill(amount);
 			break;
 		default:
-			parkingBill.setPrice(0.0);
+			parkingBill.setTotalBill(0.0);
 		}
 		return parkingBill;
 	}

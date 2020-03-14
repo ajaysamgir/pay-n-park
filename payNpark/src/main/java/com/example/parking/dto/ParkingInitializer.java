@@ -9,17 +9,23 @@ public class ParkingInitializer {
 	private Integer electric50KWCar;
 
 	private Integer standardCar;
-	
+
 	private String policy;
+
+	private double rentPerHour;
+
+	private double fixedRateAmount;
 
 	public ParkingInitializer() {
 	}
 
-	public ParkingInitializer(int e20kw, int e50wk, int std, int capacity) {
+	public ParkingInitializer(int e20kw, int e50wk, int std, int capacity, double hourRate, double fixedRate) {
 		this.electric20KWCar = e20kw;
 		this.electric50KWCar = e50wk;
 		this.standardCar = std;
 		this.totalCapacity = capacity;
+		this.rentPerHour = hourRate;
+		this.fixedRateAmount = fixedRate;
 	}
 
 	public Integer getTotalCapacity() {
@@ -60,5 +66,21 @@ public class ParkingInitializer {
 
 	public void setPolicy(String policy) {
 		this.policy = policy;
+	}
+
+	public double getRentPerHour() {
+		return rentPerHour;
+	}
+
+	public void setRentPerHour(double rentPerHour) {
+		this.rentPerHour = rentPerHour;
+	}
+
+	public double getFixedRateAmount() {
+		return fixedRateAmount;
+	}
+
+	public void setFixedRateAmount(double fixedRateAmount) {
+		this.fixedRateAmount = fixedRateAmount;
 	}
 }

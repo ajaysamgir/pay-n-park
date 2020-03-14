@@ -27,7 +27,7 @@ public class ParkingBill {
 	private ParkingSlot parkingSlot;
 
 	@Column(name = "price", nullable = false)
-	private Double price;
+	private Double totalBill;
 
 	@Column(name = "start_time", nullable = false)
 	private LocalDateTime startTime;
@@ -38,11 +38,12 @@ public class ParkingBill {
 	public ParkingBill() {
 	}
 
-	public ParkingBill(String carNumber, ParkingSlot parkingSlot, LocalDateTime startTime, LocalDateTime endTime) {
+	public ParkingBill(String carNumber, ParkingSlot parkingSlot, LocalDateTime startTime, LocalDateTime endTime, double totalBill) {
 		this.carNumber = carNumber;
 		this.parkingSlot = parkingSlot;
 		this.startTime = startTime;
 		this.endTime = endTime;
+		this.totalBill = totalBill;
 	}
 
 	public Long getId() {
@@ -69,12 +70,12 @@ public class ParkingBill {
 		this.parkingSlot = parkingSlot;
 	}
 
-	public Double getPrice() {
-		return price;
+	public Double getTotalBill() {
+		return totalBill;
 	}
 
-	public void setPrice(Double price) {
-		this.price = price;
+	public void setTotalBill(Double totalBill) {
+		this.totalBill = totalBill;
 	}
 
 	public LocalDateTime getStartTime() {
