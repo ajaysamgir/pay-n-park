@@ -1,5 +1,7 @@
 package com.example.parking.service;
 
+import java.sql.Date;
+import java.sql.Time;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -14,11 +16,11 @@ import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.ParkingSlotType;
 import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.CarEntryAllreayExistException;
+import com.example.parking.exception.CarNotFoundInSlotException;
 import com.example.parking.exception.ErrorMessages;
 import com.example.parking.exception.SlotNotFoundException;
 import com.example.parking.model.ParkingBill;
 import com.example.parking.model.ParkingSlot;
-import com.example.parking.model.PricingPolicy;
 import com.example.parking.repository.ParkingBillRepository;
 import com.example.parking.repository.ParkingSlotRepository;
 
@@ -30,8 +32,6 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 
 	private boolean initialized = false;
 
-	private PricingPolicy pricingPolicy;
-
 	public ParkingTollServiceImpl(ParkingSlotRepository parkingSlotRepository,
 			ParkingBillRepository parkingBillRepository) {
 		this.parkingSlotRepository = parkingSlotRepository;
@@ -39,13 +39,14 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 	}
 
 	@Override
-	public Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails) throws SlotNotFoundException, CarEntryAllreayExistException {
+	public Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails)
+			throws SlotNotFoundException, CarEntryAllreayExistException {
 		String slotType = carDetails.getCarType();
-		
-		if(validateExistingEntry(carDetails.getCarNumber())) {
+
+		if (validateExistingEntry(carDetails.getCarNumber())) {
 			throw new CarEntryAllreayExistException(ErrorMessages.CAR_ENTRY_EXIST + ":" + carDetails.getCarNumber());
 		}
-		
+
 		synchronized (ParkingTollServiceImpl.class) {
 			Optional<ParkingSlot> firstParkingSlot = parkingSlotRepository.findAll().stream()
 					.filter(ps -> ps.getParkingSlotType().equalsIgnoreCase(slotType) && ps.isFree()).findFirst();
@@ -62,7 +63,7 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 
 	private boolean validateExistingEntry(String carNumber) {
 		Optional<ParkingSlot> availableEntry = parkingSlotRepository.findByParkedCar(carNumber);
-		if(availableEntry.isPresent()) {
+		if (availableEntry.isPresent()) {
 			return true;
 		}
 		return false;
@@ -81,7 +82,7 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 			int countOfE20KWCarSlot = tollParkingInitializer.getElectric20KWCar();
 			int countOfE50KWCarSlot = tollParkingInitializer.getElectric50KWCar();
 			String defaultPolicy = tollParkingInitializer.getPolicy();
-			
+
 			IntStream.rangeClosed(1, countOfStandardCarSlot)
 					.forEach(i -> parkingSlotRepository.save(new ParkingSlot("Standard", true, defaultPolicy)));
 			IntStream.rangeClosed(1, countOfE20KWCarSlot)
@@ -107,49 +108,52 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 		return Optional.empty();
 	}
 
-	public synchronized Optional<ParkingBill> leaveParking(String vehicleNo) {
-		Optional<ParkingBill> firstParkingBill = parkingBillRepository.findAll().stream()
-				.filter(pb -> pb.getVehicleNo().equals(vehicleNo) && pb.getEndTime() == null).findFirst();
-		if (firstParkingBill.isPresent()) {
-			ParkingBill parkingBill = firstParkingBill.get();
-			parkingBill.setEndTime(LocalDateTime.now());
-			parkingSlotRepository.findById(parkingBill.getParkingSlot().getId()).get().setFree(true);
-			handleParkingBill(parkingBill);
+	public synchronized Optional<ParkingBill> leaveParking(String carNumber) throws CarNotFoundInSlotException {
+		Optional<ParkingSlot> parkingSlot = parkingSlotRepository.findByParkedCar(carNumber);
+		if (parkingSlot.isPresent()) {
+			if (parkingSlot.get().isFree()) {
+				throw new CarNotFoundInSlotException(ErrorMessages.CAR_NUMBER_NOT_FOUND_IN_SLOT);
+			}
+			ParkingBill bill = new ParkingBill();
+			bill.setCarNumber(carNumber);
+			bill.setStartTime(parkingSlot.get().getParkingTime());
+			bill.setEndTime(LocalDateTime.now());
+			parkingSlotRepository.findById(parkingSlot.get().getId()).get().setFree(true);
+			bill = generateParkingBill(bill, parkingSlot.get().getPolicy());
+			return Optional.of(bill);
 		}
-
-		return firstParkingBill;
-	}
-
-	public boolean updatePricingPolicy(double fixAmt, double hourRate) {
-		if (fixAmt >= 0 && hourRate > 0) {
-			PricingPolicy policy = new PricingPolicy(fixAmt, hourRate);
-			this.pricingPolicy = policy;
-			return true;
-		}
-
-		return false;
-	}
-
-	public ParkingBill handleParkingBill(ParkingBill parkingBill) {
-		double price = pricingPolicy.getFixedAmount() + pricingPolicy.getHourPrice() * parkingHours(parkingBill);
-		parkingBill.setPrice(price);
-
-		return parkingBillRepository.save(parkingBill);
-	}
-
-	private double parkingHours(ParkingBill parkingBill) {
-		return parkingBill.getStartTime().until(parkingBill.getEndTime(), ChronoUnit.HOURS);
+		throw new CarNotFoundInSlotException(ErrorMessages.CAR_NUMBER_NOT_FOUND_IN_SLOT);
 	}
 
 	@Override
 	public Optional<ParkingSlotDto> applyPolicy(PolicyDetails policyDetails) throws SlotNotFoundException {
 		Optional<ParkingSlot> parkingSlot = parkingSlotRepository.findAll().stream()
 				.filter(p -> p.getId() == policyDetails.getParkingSlotNo()).findFirst();
-		if(parkingSlot.isPresent()) {
+		if (parkingSlot.isPresent()) {
 			parkingSlot.get().setPolicy(policyDetails.getPolicyType());
 			parkingSlotRepository.save(parkingSlot.get());
 			return Optional.of(ParkingSlotDto.fromDomain(parkingSlot.get()));
 		}
 		throw new SlotNotFoundException(ErrorMessages.SLOT_IS_NOT_FOUND);
+	}
+
+	private ParkingBill generateParkingBill(ParkingBill parkingBill, String policy) {
+		switch (policy) {
+		case "Fixed":
+			double amt = 10 * parkingHours(parkingBill.getStartTime(), parkingBill.getEndTime());
+			parkingBill.setPrice(amt);
+			break;
+		case "Hourly":
+			double amount = 10 * parkingHours(parkingBill.getStartTime(), parkingBill.getEndTime());
+			parkingBill.setPrice(amount);
+			break;
+		default:
+			parkingBill.setPrice(0.0);
+		}
+		return parkingBill;
+	}
+
+	private double parkingHours(LocalDateTime start, LocalDateTime end) {
+		return start.until(end, ChronoUnit.MINUTES) / 60;
 	}
 }

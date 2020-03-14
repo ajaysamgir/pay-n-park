@@ -1,5 +1,8 @@
 package com.example.parking.model;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -25,6 +28,9 @@ public class ParkingSlot {
 	
 	@Column(name = "parkedCar", nullable = true)
 	private String parkedCar;
+	
+	@Column(name = "parkingTime", nullable = true)
+	private LocalDateTime parkingTime;
 
 	public ParkingSlot() {
 		super();
@@ -76,6 +82,16 @@ public class ParkingSlot {
 	public void setParkedCar(String parkedCar) {
 		this.parkedCar = parkedCar;
 	}
-	
-	
+
+	public LocalDateTime getParkingTime() {
+		return parkingTime;
+	}
+
+	public void setParkingTime(LocalDateTime parkingTime) {
+		this.parkingTime = parkingTime;
+	}
+
+	public Boolean getFree() {
+		return free;
+	}
 }

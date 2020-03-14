@@ -19,8 +19,8 @@ public class ParkingBill {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	@Column(name = "vehicle_number", nullable = false)
-	private String vehicleNo;
+	@Column(name = "car_number", nullable = false)
+	private String carNumber;
 
 	@ManyToOne
 	@JoinColumn(name = "PARKINGSLOTS_ID")
@@ -35,10 +35,14 @@ public class ParkingBill {
 	@Column(name = "end_time", nullable = false)
 	private LocalDateTime endTime;
 
-	public ParkingBill(String vehicleNo, ParkingSlot parkingSlot, LocalDateTime time) {
-		this.vehicleNo = vehicleNo;
+	public ParkingBill() {
+	}
+
+	public ParkingBill(String carNumber, ParkingSlot parkingSlot, LocalDateTime startTime, LocalDateTime endTime) {
+		this.carNumber = carNumber;
 		this.parkingSlot = parkingSlot;
-		this.startTime = time;
+		this.startTime = startTime;
+		this.endTime = endTime;
 	}
 
 	public Long getId() {
@@ -49,12 +53,12 @@ public class ParkingBill {
 		this.id = id;
 	}
 
-	public String getVehicleNo() {
-		return vehicleNo;
+	public String getCarNumber() {
+		return carNumber;
 	}
 
-	public void setVehicleNo(String vehicleNo) {
-		this.vehicleNo = vehicleNo;
+	public void setCarNumber(String carNumber) {
+		this.carNumber = carNumber;
 	}
 
 	public ParkingSlot getParkingSlot() {

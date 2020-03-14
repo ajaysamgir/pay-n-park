@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,11 +20,10 @@ import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.AllReadyInitializedException;
-import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.InvalidCapacityException;
+import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.SlotsNotInitializedException;
 import com.example.parking.model.ParkingBill;
-import com.example.parking.model.PricingPolicy;
 import com.example.parking.service.ParkingTollService;
 
 @RestController
@@ -111,8 +109,8 @@ public class ParkingTollController {
 		return ResponseEntity.notFound().build();
 	}
 
-	@GetMapping("/exit/{vehicleNo}")
-	public ResponseEntity<ParkingBill> leaveParking(@PathVariable("vehicleNo") String carNumber) throws Exception {
+	@GetMapping("/exit/{carNumber}")
+	public ResponseEntity<ParkingBill> leaveParking(@PathVariable("carNumber") String carNumber) throws Exception {
 		Optional<ParkingBill> parkingBillResponse = parkingTollService.leaveParking(carNumber);
 		if (parkingBillResponse.isPresent())
 			return ResponseEntity.ok(parkingBillResponse.get());
@@ -128,7 +126,6 @@ public class ParkingTollController {
 	}
 
 	private boolean validatePolicy(String policyType) {
-
 		for (String policy : policies) {
 			if (policy.equalsIgnoreCase(policyType)) {
 				return true;
