@@ -16,7 +16,7 @@ public class ApplicationExceptionHandler {
 
 	@ExceptionHandler({ SlotNotFoundException.class, InvalidCapacityException.class, AllReadyInitializedException.class,
 			SlotsNotInitializedException.class, PolicyIsNoFoundException.class, CarEntryAllreayExistException.class,
-			CarNotFoundInSlotException.class, InvalidCarTypeException.class })
+			CarNotFoundInSlotException.class, InvalidCarTypeException.class, AppNotInitializedException.class })
 	@Nullable
 	public final ResponseEntity<CustomErrorHandler> handleException(Exception ex, WebRequest request) {
 		if (ex instanceof SlotNotFoundException) {
@@ -40,16 +40,29 @@ public class ApplicationExceptionHandler {
 		} else if (ex instanceof InvalidCarTypeException) {
 			InvalidCarTypeException exp = (InvalidCarTypeException) ex;
 			return handleInvalidCarTypeException(exp, request);
+		} else if (ex instanceof AppNotInitializedException) {
+			AppNotInitializedException exp = (AppNotInitializedException) ex;
+			return handleAppNotInitializedException(exp, request);
 		} else {
 			return handleExceptionInternal(ex, request);
 		}
 	}
 
-	private ResponseEntity<CustomErrorHandler> handleInvalidCarTypeException(InvalidCarTypeException exp, WebRequest request) {
+	private ResponseEntity<CustomErrorHandler> handleAppNotInitializedException(AppNotInitializedException exp,
+			WebRequest request) {
 		List<String> details = new ArrayList<>();
 		details.add(exp.getMessage());
-		CustomErrorHandler error = new CustomErrorHandler(ErrorMessages.INVALID_CAR_TYPE, details,
-				HttpStatus.NOT_FOUND, new Date().toString());
+		CustomErrorHandler error = new CustomErrorHandler(ErrorMessages.APP_NOT_INITIATED, details,
+				HttpStatus.NOT_ACCEPTABLE, new Date().toString());
+		return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+	}
+
+	private ResponseEntity<CustomErrorHandler> handleInvalidCarTypeException(InvalidCarTypeException exp,
+			WebRequest request) {
+		List<String> details = new ArrayList<>();
+		details.add(exp.getMessage());
+		CustomErrorHandler error = new CustomErrorHandler(ErrorMessages.INVALID_CAR_TYPE, details, HttpStatus.NOT_FOUND,
+				new Date().toString());
 		return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
 	}
 
@@ -99,7 +112,9 @@ public class ApplicationExceptionHandler {
 	}
 
 	private ResponseEntity<CustomErrorHandler> handleExceptionInternal(Exception ex, WebRequest request) {
-		CustomErrorHandler errorHandler = new CustomErrorHandler(ex.getMessage(), null,
+		List<String> details = new ArrayList<>();
+		details.add(ex.getMessage());
+		CustomErrorHandler errorHandler = new CustomErrorHandler(ex.getMessage(), details,
 				HttpStatus.INTERNAL_SERVER_ERROR, new Date().toString());
 		return new ResponseEntity<>(errorHandler, HttpStatus.INTERNAL_SERVER_ERROR);
 	}

@@ -20,6 +20,8 @@ import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.AllReadyInitializedException;
+import com.example.parking.exception.AppNotInitializedException;
+import com.example.parking.exception.ErrorMessages;
 import com.example.parking.exception.InvalidCapacityException;
 import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.SlotsNotInitializedException;
@@ -38,7 +40,7 @@ public class ParkingTollController {
 	@Value("${parking.policies}")
 	private String[] policies;
 
-	private static boolean isInitialized;
+	private boolean isInitialized;
 
 	@PostMapping("/initialize")
 	public ResponseEntity<ParkingInitializer> initializeTollParking(@RequestBody ParkingInitializer parkingSlotConfig)
@@ -65,15 +67,6 @@ public class ParkingTollController {
 		}
 	}
 
-	private boolean policyMatch(String policy) {
-		for (String p : policies) {
-			if (p.equalsIgnoreCase(policy)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	@GetMapping("/slots")
 	public ResponseEntity<List<ParkingSlotDto>> getParkingSlotDetail() throws SlotsNotInitializedException {
 		Optional<List<ParkingSlotDto>> response = parkingTollService.getAllParkingSlots();
@@ -87,34 +80,42 @@ public class ParkingTollController {
 	public ResponseEntity<ParkingSlotDto> applyPolicyOnParkingSlot(@RequestBody PolicyDetails policyDetails)
 			throws Exception {
 
-		if (!validatePolicy(policyDetails.getPolicyType())) {
-			throw new PolicyIsNoFoundException();
-		}
-		Optional<ParkingSlotDto> parkingSlot = parkingTollService.applyPolicy(policyDetails);
+		if (isInitialized) {
+			if (!validatePolicy(policyDetails.getPolicyType())) {
+				throw new PolicyIsNoFoundException();
+			}
+			Optional<ParkingSlotDto> parkingSlot = parkingTollService.applyPolicy(policyDetails);
 
-		if (parkingSlot.isPresent()) {
-			return ResponseEntity.ok(parkingSlot.get());
+			if (parkingSlot.isPresent()) {
+				return ResponseEntity.ok(parkingSlot.get());
+			}
+			return ResponseEntity.notFound().build();
 		}
-		return ResponseEntity.notFound().build();
+		throw new AppNotInitializedException(ErrorMessages.APP_NOT_INITIATED);
 	}
 
 	@PostMapping("/entry")
 	public ResponseEntity<ParkingSlotDto> getParkingSlot(@Valid @RequestBody CarDetails carDetails) throws Exception {
+		if (isInitialized) {
+			Optional<ParkingSlotDto> parkingSlot = parkingTollService.getAvailableParkingSlot(carDetails);
 
-		Optional<ParkingSlotDto> parkingSlot = parkingTollService.getAvailableParkingSlot(carDetails);
-
-		if (parkingSlot.isPresent()) {
-			return ResponseEntity.ok(parkingSlot.get());
+			if (parkingSlot.isPresent()) {
+				return ResponseEntity.ok(parkingSlot.get());
+			}
+			return ResponseEntity.notFound().build();
 		}
-		return ResponseEntity.notFound().build();
+		throw new AppNotInitializedException(ErrorMessages.APP_NOT_INITIATED);
 	}
 
 	@GetMapping("/exit/{carNumber}")
 	public ResponseEntity<ParkingBill> leaveParking(@PathVariable("carNumber") String carNumber) throws Exception {
-		Optional<ParkingBill> parkingBillResponse = parkingTollService.leaveParking(carNumber);
-		if (parkingBillResponse.isPresent())
-			return ResponseEntity.ok(parkingBillResponse.get());
-		return ResponseEntity.notFound().build();
+		if (isInitialized) {
+			Optional<ParkingBill> parkingBillResponse = parkingTollService.leaveParking(carNumber);
+			if (parkingBillResponse.isPresent())
+				return ResponseEntity.ok(parkingBillResponse.get());
+			return ResponseEntity.notFound().build();
+		}
+		throw new AppNotInitializedException(ErrorMessages.APP_NOT_INITIATED);
 	}
 
 	private boolean validParkingCapacity(ParkingInitializer parkingSlotConfig) {
@@ -128,6 +129,15 @@ public class ParkingTollController {
 	private boolean validatePolicy(String policyType) {
 		for (String policy : policies) {
 			if (policy.equalsIgnoreCase(policyType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean policyMatch(String policy) {
+		for (String p : policies) {
+			if (p.equalsIgnoreCase(policy)) {
 				return true;
 			}
 		}

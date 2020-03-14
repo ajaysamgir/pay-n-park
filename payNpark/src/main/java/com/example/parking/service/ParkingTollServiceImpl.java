@@ -1,7 +1,5 @@
 package com.example.parking.service;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
