@@ -26,13 +26,13 @@ import com.example.parking.exception.InvalidCapacityException;
 import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.SlotsNotInitializedException;
 import com.example.parking.model.ParkingBill;
-import com.example.parking.service.ParkingTollService;
+import com.example.parking.service.ParkingService;
 
 @RestController
 @RequestMapping("/api")
-public class ParkingTollController {
+public class ParkingController {
 	@Autowired
-	private ParkingTollService parkingTollService;
+	private ParkingService parkingTollService;
 
 	@Value("${parking.slotTypes}")
 	private String[] slotTypes;

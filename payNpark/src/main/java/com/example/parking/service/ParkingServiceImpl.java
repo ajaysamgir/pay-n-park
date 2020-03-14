@@ -23,7 +23,7 @@ import com.example.parking.model.ParkingSlot;
 import com.example.parking.repository.ParkingBillRepository;
 import com.example.parking.repository.ParkingSlotRepository;
 
-public class ParkingTollServiceImpl implements ParkingTollService {
+public class ParkingServiceImpl implements ParkingService {
 
 	private ParkingSlotRepository parkingSlotRepository;
 
@@ -31,7 +31,7 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 
 	private boolean initialized = false;
 
-	public ParkingTollServiceImpl(ParkingSlotRepository parkingSlotRepository,
+	public ParkingServiceImpl(ParkingSlotRepository parkingSlotRepository,
 			ParkingBillRepository parkingBillRepository) {
 		this.parkingSlotRepository = parkingSlotRepository;
 		this.parkingBillRepository = parkingBillRepository;
@@ -49,7 +49,7 @@ public class ParkingTollServiceImpl implements ParkingTollService {
 			throw new CarEntryAllreayExistException(ErrorMessages.CAR_ENTRY_EXIST + ":" + carDetails.getCarNumber());
 		}
 
-		synchronized (ParkingTollServiceImpl.class) {
+		synchronized (ParkingServiceImpl.class) {
 			Optional<ParkingSlot> firstParkingSlot = parkingSlotRepository.findAll().stream()
 					.filter(ps -> ps.getParkingSlotType().equalsIgnoreCase(carType) && ps.isFree()).findFirst();
 			if (firstParkingSlot.isPresent()) {

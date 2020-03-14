@@ -17,7 +17,7 @@ import com.example.parking.exception.SlotNotFoundException;
 import com.example.parking.model.ParkingBill;
 
 @Service
-public interface ParkingTollService {
+public interface ParkingService {
 
 	Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails)
 			throws SlotNotFoundException, CarEntryAllreayExistException, InvalidCarTypeException;

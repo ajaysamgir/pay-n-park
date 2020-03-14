@@ -8,8 +8,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.example.parking.repository.ParkingBillRepository;
 import com.example.parking.repository.ParkingSlotRepository;
-import com.example.parking.service.ParkingTollService;
-import com.example.parking.service.ParkingTollServiceImpl;
+import com.example.parking.service.ParkingService;
+import com.example.parking.service.ParkingServiceImpl;
 
 @Configuration
 @EnableWebMvc
@@ -22,8 +22,8 @@ public class AppConfig {
 	@Autowired ParkingBillRepository parkingBillRepository;
 	
 	@Bean
-	public ParkingTollService getParkingTollService() {
-		return new ParkingTollServiceImpl(parkingSlotRepository, parkingBillRepository);
+	public ParkingService getParkingTollService() {
+		return new ParkingServiceImpl(parkingSlotRepository, parkingBillRepository);
 	}
 	
 }
