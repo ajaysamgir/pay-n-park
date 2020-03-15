@@ -117,6 +117,7 @@ public class ParkingServiceImpl implements ParkingService {
 		return Optional.empty();
 	}
 
+	@Override
 	public synchronized Optional<ParkingBill> leaveParking(String carNumber) throws CarNotFoundInSlotException {
 		Optional<ParkingSlot> parkingSlot = parkingSlotRepository.findByParkedCar(carNumber);
 		if (parkingSlot.isPresent()) {
