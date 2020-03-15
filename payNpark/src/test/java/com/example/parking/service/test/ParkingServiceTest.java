@@ -1,12 +1,14 @@
 package com.example.parking.service.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.exception.CarEntryAllreayExistException;
 import com.example.parking.exception.ErrorMessages;
+import com.example.parking.exception.InvalidCapacityException;
 import com.example.parking.exception.InvalidCarTypeException;
 import com.example.parking.exception.SlotNotFoundException;
 import com.example.parking.model.ParkingSlot;
@@ -55,20 +58,40 @@ public class ParkingServiceTest {
 	public void initializeParkingSlotsSuccessTest() {
 		ParkingInitializer initializer = PayNParkApplicationData.getParkingInitializer();
 		ParkingInitializer result = service.initialize(initializer);
-		
+
 		assertEquals(initializer, result);
-		assertEquals(result.getElectric20KWCar(), 10);
-		assertEquals(result.getElectric50KWCar(), 10);
-		assertEquals(result.getStandardCar(), 10);
-		assertEquals(result.getPolicy(), "fixed");
+		assertEquals(10, result.getElectric20KWCar());
+		assertEquals(10, result.getElectric50KWCar());
+		assertEquals(10, result.getStandardCar());
+		assertEquals("fixed", result.getPolicy());
 	}
-	
+
+	/**
+	 * Get all parking slots
+	 */
 	@Test
-	public void initializeParkingSlotsWithInvalidCapacityTest() {
-		ParkingInitializer initializer = PayNParkApplicationData.getParkingInitializer();
-		ParkingInitializer result = service.initialize(initializer);
-		
-		assertEquals(initializer, result);
+	public void getAllParkingSlots() {
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		parkingSlot.setId(1L);
+		when(parkingSlotRepository.findAll()).thenReturn(Arrays.asList(parkingSlot));
+
+		Optional<List<ParkingSlotDto>> result = service.getAllParkingSlots();
+
+		assertFalse(result.isEmpty());
+		assertEquals(1, parkingSlot.getId());
+		assertEquals(10.0, parkingSlot.getRentPerHour());
+		assertEquals(10.0, parkingSlot.getFixedAmount());
+		assertEquals(null, parkingSlot.getParkedCar());
+		assertEquals(true, parkingSlot.getFree());
+	}
+
+	@Test
+	public void getAllParkingSlotsReturnEmpty() {
+		when(parkingSlotRepository.findAll()).thenReturn(new ArrayList<>());
+
+		Optional<List<ParkingSlotDto>> result = service.getAllParkingSlots();
+
+		assertTrue(result.isEmpty());
 	}
 
 	/**
@@ -107,6 +130,8 @@ public class ParkingServiceTest {
 		parkingSlot.setId(1L);
 		when(parkingSlotRepository.findByParkedCar(carDetails.getCarNumber())).thenReturn(Optional.of(parkingSlot));
 
-		assertThrows(CarEntryAllreayExistException.class, () -> service.getAvailableParkingSlot(carDetails), ErrorMessages.CAR_ENTRY_EXIST);
+		assertThrows(CarEntryAllreayExistException.class, () -> service.getAvailableParkingSlot(carDetails),
+				ErrorMessages.CAR_ENTRY_EXIST);
 	}
+
 }

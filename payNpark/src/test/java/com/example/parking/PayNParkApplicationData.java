@@ -1,6 +1,6 @@
 package com.example.parking;
 
-import com.example.parking.dto.CarDetails; 
+import com.example.parking.dto.CarDetails;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.dto.ParkingInitializer;
 
@@ -17,8 +17,8 @@ public class PayNParkApplicationData {
 		return carDetails;
 	}
 
-	public static  ParkingInitializer getParkingInitializer() {
-		return new ParkingInitializer(10, 10, 10, 30, 10.0, 15.0);
+	public static ParkingInitializer getParkingInitializer() {
+		return new ParkingInitializer(10, 10, 10, 30, 10.0, 15.0, "fixed");
 	}
 
 }

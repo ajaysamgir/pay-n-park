@@ -72,22 +72,22 @@ public class ParkingServiceImpl implements ParkingService {
 
 	@Override
 	public ParkingInitializer initialize(ParkingInitializer tollParkingInitializer) {
-		
-			int countOfStandardCarSlot = tollParkingInitializer.getStandardCar();
-			int countOfE20KWCarSlot = tollParkingInitializer.getElectric20KWCar();
-			int countOfE50KWCarSlot = tollParkingInitializer.getElectric50KWCar();
-			String defaultPolicy = tollParkingInitializer.getPolicy();
-			double rentPerHour = tollParkingInitializer.getRentPerHour();
-			double fixedRateAmt = tollParkingInitializer.getFixedRateAmount();
 
-			IntStream.rangeClosed(1, countOfStandardCarSlot).forEach(i -> parkingSlotRepository
-					.save(new ParkingSlot("Standard", true, defaultPolicy, rentPerHour, fixedRateAmt)));
-			IntStream.rangeClosed(1, countOfE20KWCarSlot).forEach(i -> parkingSlotRepository
-					.save(new ParkingSlot("Electric20KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
-			IntStream.rangeClosed(1, countOfE50KWCarSlot).forEach(i -> parkingSlotRepository
-					.save(new ParkingSlot("Electric50KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
+		int countOfStandardCarSlot = tollParkingInitializer.getStandardCar();
+		int countOfE20KWCarSlot = tollParkingInitializer.getElectric20KWCar();
+		int countOfE50KWCarSlot = tollParkingInitializer.getElectric50KWCar();
+		String defaultPolicy = tollParkingInitializer.getPolicy();
+		double rentPerHour = tollParkingInitializer.getRentPerHour();
+		double fixedRateAmt = tollParkingInitializer.getFixedRateAmount();
 
-			return tollParkingInitializer;
+		IntStream.rangeClosed(1, countOfStandardCarSlot).forEach(i -> parkingSlotRepository
+				.save(new ParkingSlot("Standard", true, defaultPolicy, rentPerHour, fixedRateAmt)));
+		IntStream.rangeClosed(1, countOfE20KWCarSlot).forEach(i -> parkingSlotRepository
+				.save(new ParkingSlot("Electric20KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
+		IntStream.rangeClosed(1, countOfE50KWCarSlot).forEach(i -> parkingSlotRepository
+				.save(new ParkingSlot("Electric50KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
+
+		return tollParkingInitializer;
 	}
 
 	@Override
