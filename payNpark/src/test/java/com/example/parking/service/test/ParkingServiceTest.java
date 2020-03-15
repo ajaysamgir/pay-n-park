@@ -16,6 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.example.parking.PayNParkApplicationData;
 import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.ParkingSlotType;
@@ -46,15 +47,17 @@ public class ParkingServiceTest {
 	}
 
 	@Test
+	public void initializeParkingSlotsSuccessTest() {
+		
+	}
+	
+	@Test
 	public void getParkingSlotSuccessTest() throws SlotNotFoundException, CarEntryAllreayExistException, InvalidCarTypeException {
-		ParkingSlot parkingSlot = new ParkingSlot("Standard", true, "fixed", 10, 10);
-		CarDetails carDetails = new CarDetails();
-		carDetails.setCarNumber("MH12AD9415");
-		carDetails.setCarType("Standard");
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
 		parkingSlot.setId(1L);
+		CarDetails carDetails = PayNParkApplicationData.getCarDetailsData();
 		when(parkingSlotRepository.findAll()).thenReturn(Arrays.asList(parkingSlot));
 		
-
 		Optional<ParkingSlotDto> parkingSlotDto = service.getAvailableParkingSlot(carDetails);
 		assertTrue(parkingSlotDto.isPresent());
 		assertTrue(parkingSlotDto.get() instanceof ParkingSlotDto);
@@ -62,11 +65,10 @@ public class ParkingServiceTest {
 	
 	@Test
 	public void getParkingSlotWithSlotNotFoundExceptionTest() throws SlotNotFoundException, CarEntryAllreayExistException, InvalidCarTypeException {
-		ParkingSlot parkingSlot = new ParkingSlot("SomethingElse", true, "fixed", 10, 10);
-		CarDetails carDetails = new CarDetails();
-		carDetails.setCarNumber("MH12AD9415");
-		carDetails.setCarType("Standard");
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		CarDetails carDetails = PayNParkApplicationData.getCarDetailsData();
 		parkingSlot.setId(1L);
+		carDetails.setCarType("SomethingElse");
 		when(parkingSlotRepository.findAll()).thenReturn(Arrays.asList(parkingSlot));
 		
 		assertThrows(SlotNotFoundException.class, () -> service.getAvailableParkingSlot(carDetails));
