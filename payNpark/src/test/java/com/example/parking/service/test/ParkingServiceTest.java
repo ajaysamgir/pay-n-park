@@ -27,6 +27,7 @@ import com.example.parking.PayNParkApplicationData;
 import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
+import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.CarEntryAllreayExistException;
 import com.example.parking.exception.CarNotFoundInSlotException;
 import com.example.parking.exception.ErrorMessages;
@@ -183,7 +184,7 @@ public class ParkingServiceTest {
 	}
 
 	@Test
-	public void leaveParkingUnknownPolicySuccessTest() throws CarNotFoundInSlotException, PolicyIsNoFoundException {
+	public void leaveParkingUnknownPolicyTest() throws CarNotFoundInSlotException, PolicyIsNoFoundException {
 		String carNumber = "MH12AD9415";
 		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
 		parkingSlot.setId(1L);
@@ -206,6 +207,15 @@ public class ParkingServiceTest {
 	}
 
 	@Test
+	public void leaveParkingWithInvalidSlotTest() throws CarNotFoundInSlotException {
+		String carNumber = "MH12AD9415";
+		when(parkingSlotRepository.findByParkedCar(carNumber))
+				.thenReturn(Optional.ofNullable(null));
+
+		assertThrows(CarNotFoundInSlotException.class, () -> service.leaveParking(carNumber));
+	}
+
+	@Test
 	public void leaveParkingWithPolicyNotFoundInSlotExceptionTest() throws CarNotFoundInSlotException {
 		String carNumber = "MH12AD9415";
 		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
@@ -213,5 +223,35 @@ public class ParkingServiceTest {
 		when(parkingSlotRepository.findByParkedCar(carNumber)).thenReturn(Optional.of(parkingSlot));
 
 		assertThrows(CarNotFoundInSlotException.class, () -> service.leaveParking(carNumber));
+	}
+
+	/**
+	 * Apply policy test
+	 * 
+	 * @throws SlotNotFoundException
+	 */
+	@Test
+	public void applyPolicySuccessTest() throws SlotNotFoundException {
+		PolicyDetails policyDetails = PayNParkApplicationData.getPolicyDetailsData();
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		parkingSlot.setId(1L);
+		when(parkingSlotRepository.findAll()).thenReturn(Arrays.asList(parkingSlot));
+
+		Optional<ParkingSlotDto> result = service.applyPolicy(policyDetails);
+		
+		assertTrue(result.isPresent());
+		assertEquals(1L, result.get().getId());
+		assertEquals("Hourly", result.get().getPolicy());
+	}
+
+	@Test
+	public void applyPolicySlotNotFoundExceptionTest() throws SlotNotFoundException {
+		PolicyDetails policyDetails = PayNParkApplicationData.getPolicyDetailsData();
+		policyDetails.setParkingSlotNo(3L);
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		parkingSlot.setId(1L);
+		when(parkingSlotRepository.findAll()).thenReturn(Arrays.asList(parkingSlot));
+
+		assertThrows(SlotNotFoundException.class,() -> service.applyPolicy(policyDetails));
 	}
 }

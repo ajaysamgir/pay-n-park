@@ -23,8 +23,6 @@ public interface ParkingService {
 	Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails)
 			throws SlotNotFoundException, CarEntryAllreayExistException, InvalidCarTypeException;
 
-	ParkingSlotType retrieveParkingSlotType(String vehicleNo);
-
 	ParkingInitializer initialize(ParkingInitializer tollParkingConfig);
 
 	Optional<ParkingBill> leaveParking(String plateNumber) throws CarNotFoundInSlotException, PolicyIsNoFoundException;

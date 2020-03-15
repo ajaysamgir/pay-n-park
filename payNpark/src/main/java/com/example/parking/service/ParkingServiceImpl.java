@@ -67,11 +67,6 @@ public class ParkingServiceImpl implements ParkingService {
 		return false;
 	}
 
-	public ParkingSlotType retrieveParkingSlotType(String vehicleNo) {
-		Random random = new Random();
-		return ParkingSlotType.values()[random.nextInt(ParkingSlotType.values().length)];
-	}
-
 	@Override
 	public ParkingInitializer initialize(ParkingInitializer tollParkingInitializer) {
 
