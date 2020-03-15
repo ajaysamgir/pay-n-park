@@ -29,8 +29,6 @@ public class ParkingServiceImpl implements ParkingService {
 
 	private ParkingBillRepository parkingBillRepository;
 
-	private boolean initialized = false;
-
 	public ParkingServiceImpl(ParkingSlotRepository parkingSlotRepository,
 			ParkingBillRepository parkingBillRepository) {
 		this.parkingSlotRepository = parkingSlotRepository;
@@ -40,18 +38,14 @@ public class ParkingServiceImpl implements ParkingService {
 	@Override
 	public Optional<ParkingSlotDto> getAvailableParkingSlot(CarDetails carDetails)
 			throws SlotNotFoundException, CarEntryAllreayExistException, InvalidCarTypeException {
-		String carType = carDetails.getCarType();
-
-		if(invalidCarType(carType)) {
-			throw new InvalidCarTypeException(ErrorMessages.INVALID_CAR_TYPE);
-		}
 		if (validateExistingEntry(carDetails.getCarNumber())) {
 			throw new CarEntryAllreayExistException(ErrorMessages.CAR_ENTRY_EXIST + ":" + carDetails.getCarNumber());
 		}
 
 		synchronized (ParkingServiceImpl.class) {
 			Optional<ParkingSlot> firstParkingSlot = parkingSlotRepository.findAll().stream()
-					.filter(ps -> ps.getParkingSlotType().equalsIgnoreCase(carType) && ps.isFree()).findFirst();
+					.filter(ps -> ps.getParkingSlotType().equalsIgnoreCase(carDetails.getCarType()) && ps.isFree())
+					.findFirst();
 			if (firstParkingSlot.isPresent()) {
 				ParkingSlot parkingSlot = firstParkingSlot.get();
 				parkingSlot.setFree(false);
@@ -61,11 +55,6 @@ public class ParkingServiceImpl implements ParkingService {
 			}
 			throw new SlotNotFoundException(ErrorMessages.SLOT_IS_FULL + " or " + ErrorMessages.APP_NOT_INITIATED);
 		}
-	}
-
-	private boolean invalidCarType(String carType) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	private boolean validateExistingEntry(String carNumber) {
@@ -83,8 +72,7 @@ public class ParkingServiceImpl implements ParkingService {
 
 	@Override
 	public ParkingInitializer initialize(ParkingInitializer tollParkingInitializer) {
-		if (!initialized) {
-
+		
 			int countOfStandardCarSlot = tollParkingInitializer.getStandardCar();
 			int countOfE20KWCarSlot = tollParkingInitializer.getElectric20KWCar();
 			int countOfE50KWCarSlot = tollParkingInitializer.getElectric50KWCar();
@@ -100,9 +88,6 @@ public class ParkingServiceImpl implements ParkingService {
 					.save(new ParkingSlot("Electric50KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
 
 			return tollParkingInitializer;
-		}
-
-		return null;
 	}
 
 	@Override

@@ -34,11 +34,11 @@ public class ParkingController {
 	@Autowired
 	private ParkingService parkingTollService;
 
-	@Value("${parking.slotTypes}")
-	private String[] slotTypes;
-
 	@Value("${parking.policies}")
 	private String[] policies;
+	
+	@Value("${parking.slotTypes}")
+	private String[] slotTypes;
 
 	private boolean isInitialized;
 
