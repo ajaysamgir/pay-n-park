@@ -13,6 +13,7 @@ import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.CarEntryAllreayExistException;
 import com.example.parking.exception.CarNotFoundInSlotException;
 import com.example.parking.exception.InvalidCarTypeException;
+import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.SlotNotFoundException;
 import com.example.parking.model.ParkingBill;
 
@@ -26,7 +27,7 @@ public interface ParkingService {
 
 	ParkingInitializer initialize(ParkingInitializer tollParkingConfig);
 
-	Optional<ParkingBill> leaveParking(String plateNumber) throws CarNotFoundInSlotException;
+	Optional<ParkingBill> leaveParking(String plateNumber) throws CarNotFoundInSlotException, PolicyIsNoFoundException;
 
 	Optional<List<ParkingSlotDto>> getAllParkingSlots();
 

@@ -13,6 +13,6 @@ public class ErrorMessages {
 	public static final String SLOT_IS_FULL = "Not able to provide you parking slot as parking is full";
 	public static final String CAR_ENTRY_EXIST = "Car Number which mentioned that is already exist";
 	public static final String APP_NOT_INITIATED = "Application not initiated";
-	public static final String CAR_NUMBER_NOT_FOUND_IN_SLOT = "Requested car is does not exist in slot";
+	public static final String CAR_NOT_FOUND_IN_SLOT = "Requested car is does not exist in slot";
 	public static final String INVALID_CAR_TYPE = "Invalid car type";
 }

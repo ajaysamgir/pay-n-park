@@ -2,12 +2,15 @@ package com.example.parking.service.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,15 +22,19 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.example.parking.AppConstants;
 import com.example.parking.PayNParkApplicationData;
 import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.exception.CarEntryAllreayExistException;
+import com.example.parking.exception.CarNotFoundInSlotException;
 import com.example.parking.exception.ErrorMessages;
 import com.example.parking.exception.InvalidCapacityException;
 import com.example.parking.exception.InvalidCarTypeException;
+import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.SlotNotFoundException;
+import com.example.parking.model.ParkingBill;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.repository.ParkingBillRepository;
 import com.example.parking.repository.ParkingSlotRepository;
@@ -134,4 +141,77 @@ public class ParkingServiceTest {
 				ErrorMessages.CAR_ENTRY_EXIST);
 	}
 
+	/**
+	 * leaveParking
+	 * 
+	 * @throws CarNotFoundInSlotException
+	 * @throws PolicyIsNoFoundException
+	 */
+	@Test
+	public void leaveParkingSuccessTest() throws CarNotFoundInSlotException, PolicyIsNoFoundException {
+		String carNumber = "MH12AD9415";
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		parkingSlot.setId(1L);
+		parkingSlot.setParkedCar(carNumber);
+		parkingSlot.setParkingTime((LocalDateTime.now().minusHours(2)));
+		parkingSlot.setFree(false);
+		when(parkingSlotRepository.findByParkedCar(carNumber)).thenReturn(Optional.of(parkingSlot));
+
+		Optional<ParkingBill> bill = service.leaveParking(carNumber);
+
+		assertEquals("MH12AD9415", bill.get().getParkingSlot().getParkedCar());
+		assertEquals(true, bill.get().getParkingSlot().getFree());
+		assertNotNull(bill.get().getTotalBill());
+	}
+
+	@Test
+	public void leaveParkingHourlyPolicySuccessTest() throws CarNotFoundInSlotException, PolicyIsNoFoundException {
+		String carNumber = "MH12AD9415";
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		parkingSlot.setId(1L);
+		parkingSlot.setParkedCar(carNumber);
+		parkingSlot.setParkingTime((LocalDateTime.now().minusHours(2)));
+		parkingSlot.setFree(false);
+		parkingSlot.setPolicy(AppConstants.HOURLY);
+		when(parkingSlotRepository.findByParkedCar(carNumber)).thenReturn(Optional.of(parkingSlot));
+
+		Optional<ParkingBill> bill = service.leaveParking(carNumber);
+
+		assertEquals("MH12AD9415", bill.get().getParkingSlot().getParkedCar());
+		assertEquals(true, bill.get().getParkingSlot().getFree());
+		assertNotNull(bill.get().getTotalBill());
+	}
+
+	@Test
+	public void leaveParkingUnknownPolicySuccessTest() throws CarNotFoundInSlotException, PolicyIsNoFoundException {
+		String carNumber = "MH12AD9415";
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		parkingSlot.setId(1L);
+		parkingSlot.setParkedCar(carNumber);
+		parkingSlot.setParkingTime((LocalDateTime.now().minusHours(2)));
+		parkingSlot.setFree(false);
+		parkingSlot.setPolicy("SomethingElse");
+		when(parkingSlotRepository.findByParkedCar(carNumber)).thenReturn(Optional.of(parkingSlot));
+
+		assertThrows(PolicyIsNoFoundException.class, () -> service.leaveParking(carNumber));
+	}
+
+	@Test
+	public void leaveParkingWithCarNotFoundInSlotExceptionTest() throws CarNotFoundInSlotException {
+		String carNumber = "MH12AD9415";
+		when(parkingSlotRepository.findByParkedCar(carNumber))
+				.thenReturn(Optional.of(PayNParkApplicationData.getParkingSlotData()));
+
+		assertThrows(CarNotFoundInSlotException.class, () -> service.leaveParking(carNumber));
+	}
+
+	@Test
+	public void leaveParkingWithPolicyNotFoundInSlotExceptionTest() throws CarNotFoundInSlotException {
+		String carNumber = "MH12AD9415";
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		parkingSlot.setPolicy("SomethingElse");
+		when(parkingSlotRepository.findByParkedCar(carNumber)).thenReturn(Optional.of(parkingSlot));
+
+		assertThrows(CarNotFoundInSlotException.class, () -> service.leaveParking(carNumber));
+	}
 }
