@@ -41,13 +41,14 @@ public class ParkingSlot {
 		super();
 	}
 
-	public ParkingSlot(String parkingSlotType, Boolean free, String policy, double rentPerHr, double fixedRate) {
+	public ParkingSlot(String parkingSlotType, Boolean free, String policy, double rentPerHr, double fixedRate, LocalDateTime time) {
 		super();
 		this.parkingSlotType = parkingSlotType;
 		this.free = free;
 		this.policy = policy;
 		this.rentPerHour = rentPerHr;
 		this.fixedAmount = fixedRate;
+		this.parkingTime = time;
 	}
 
 	public Long getId() {

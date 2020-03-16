@@ -1,4 +1,4 @@
-package com.example.parking.service.test;
+package com.example.parking.test.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.example.parking.AppConstants;
@@ -31,7 +29,6 @@ import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.CarEntryAllreayExistException;
 import com.example.parking.exception.CarNotFoundInSlotException;
 import com.example.parking.exception.ErrorMessages;
-import com.example.parking.exception.InvalidCapacityException;
 import com.example.parking.exception.InvalidCarTypeException;
 import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.SlotNotFoundException;

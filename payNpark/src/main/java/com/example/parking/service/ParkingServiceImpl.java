@@ -1,18 +1,18 @@
 package com.example.parking.service;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.IntStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.example.parking.AppConstants;
 import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
-import com.example.parking.dto.ParkingSlotType;
 import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.CarEntryAllreayExistException;
 import com.example.parking.exception.CarNotFoundInSlotException;
@@ -30,6 +30,8 @@ public class ParkingServiceImpl implements ParkingService {
 	private ParkingSlotRepository parkingSlotRepository;
 
 	private ParkingBillRepository parkingBillRepository;
+
+	private static final Logger logger = LoggerFactory.getLogger(ParkingServiceImpl.class);
 
 	public ParkingServiceImpl(ParkingSlotRepository parkingSlotRepository,
 			ParkingBillRepository parkingBillRepository) {
@@ -53,18 +55,14 @@ public class ParkingServiceImpl implements ParkingService {
 				parkingSlot.setFree(false);
 				parkingSlot.setParkedCar(carDetails.getCarNumber());
 				parkingSlotRepository.save(parkingSlot);
+
+				logger.info("Parking slot allocated sucessfully to Slot No = " + parkingSlot.getId() + " Car No = "
+						+ carDetails.getCarNumber());
 				return Optional.of(ParkingSlotDto.fromDomain(firstParkingSlot.get()));
 			}
-			throw new SlotNotFoundException(ErrorMessages.SLOT_IS_FULL + " or " + ErrorMessages.APP_NOT_INITIATED);
+			logger.error(ErrorMessages.SLOT_IS_FULL);
+			throw new SlotNotFoundException(ErrorMessages.SLOT_IS_FULL);
 		}
-	}
-
-	private boolean validateExistingEntry(String carNumber) {
-		Optional<ParkingSlot> availableEntry = parkingSlotRepository.findByParkedCar(carNumber);
-		if (availableEntry.isPresent()) {
-			return true;
-		}
-		return false;
 	}
 
 	@Override
@@ -78,12 +76,12 @@ public class ParkingServiceImpl implements ParkingService {
 		double fixedRateAmt = tollParkingInitializer.getFixedRateAmount();
 
 		IntStream.rangeClosed(1, countOfStandardCarSlot).forEach(i -> parkingSlotRepository
-				.save(new ParkingSlot("Standard", true, defaultPolicy, rentPerHour, fixedRateAmt)));
+				.save(new ParkingSlot("Standard", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
 		IntStream.rangeClosed(1, countOfE20KWCarSlot).forEach(i -> parkingSlotRepository
-				.save(new ParkingSlot("Electric20KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
+				.save(new ParkingSlot("Electric20KW", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
 		IntStream.rangeClosed(1, countOfE50KWCarSlot).forEach(i -> parkingSlotRepository
-				.save(new ParkingSlot("Electric50KW", true, defaultPolicy, rentPerHour, fixedRateAmt)));
-
+				.save(new ParkingSlot("Electric50KW", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
+		logger.info("Parking slots initialized successfully!");
 		return tollParkingInitializer;
 	}
 
@@ -96,30 +94,39 @@ public class ParkingServiceImpl implements ParkingService {
 			return Optional.of(listOfParkingSlots);
 		}
 
+		logger.info("Allocated slots not available");
 		return Optional.empty();
 	}
 
 	@Override
-	public synchronized Optional<ParkingBill> leaveParking(String carNumber) throws CarNotFoundInSlotException, PolicyIsNoFoundException {
+	public Optional<ParkingBill> leaveParking(String carNumber)
+			throws CarNotFoundInSlotException, PolicyIsNoFoundException {
 		Optional<ParkingSlot> parkingSlot = parkingSlotRepository.findByParkedCar(carNumber);
-		if (parkingSlot.isPresent()) {
-			if (parkingSlot.get().isFree()) {
-				throw new CarNotFoundInSlotException(ErrorMessages.CAR_NOT_FOUND_IN_SLOT);
+		synchronized (ParkingServiceImpl.class) {
+			if (parkingSlot.isPresent()) {
+				if (parkingSlot.get().isFree()) {
+					logger.error(ErrorMessages.CAR_NOT_FOUND_IN_SLOT + " : " + carNumber);
+					throw new CarNotFoundInSlotException(ErrorMessages.CAR_NOT_FOUND_IN_SLOT);
+				}
+				ParkingBill bill = new ParkingBill();
+				bill.setCarNumber(carNumber);
+				bill.setStartTime(parkingSlot.get().getParkingTime());
+				bill.setEndTime(LocalDateTime.now());
+				bill = generateParkingBill(bill, parkingSlot.get());
+
+				parkingSlot.get().setFree(true);
+				parkingSlotRepository.save(parkingSlot.get());
+
+				bill.setParkingSlot(parkingSlot.get());
+				parkingBillRepository.save(bill);
+
+				logger.info("Exit process done, parking slot marked as free and total bill of vehicle : " + carNumber
+						+ " is generated");
+				return Optional.of(bill);
 			}
-			ParkingBill bill = new ParkingBill();
-			bill.setCarNumber(carNumber);
-			bill.setStartTime(parkingSlot.get().getParkingTime());
-			bill.setEndTime(LocalDateTime.now());
-			bill = generateParkingBill(bill, parkingSlot.get());
 
-			parkingSlot.get().setFree(true);
-			parkingSlotRepository.save(parkingSlot.get());
-
-			bill.setParkingSlot(parkingSlot.get());
-			parkingBillRepository.save(bill);
-
-			return Optional.of(bill);
 		}
+		logger.error(ErrorMessages.CAR_NOT_FOUND_IN_SLOT);
 		throw new CarNotFoundInSlotException(ErrorMessages.CAR_NOT_FOUND_IN_SLOT);
 	}
 
@@ -130,12 +137,16 @@ public class ParkingServiceImpl implements ParkingService {
 		if (parkingSlot.isPresent()) {
 			parkingSlot.get().setPolicy(policyDetails.getPolicyType());
 			parkingSlotRepository.save(parkingSlot.get());
+
+			logger.info("Policy updated successfully!");
 			return Optional.of(ParkingSlotDto.fromDomain(parkingSlot.get()));
 		}
+		logger.error(ErrorMessages.SLOT_IS_NOT_FOUND + " : Update Policy");
 		throw new SlotNotFoundException(ErrorMessages.SLOT_IS_NOT_FOUND);
 	}
 
-	private ParkingBill generateParkingBill(ParkingBill parkingBill, ParkingSlot parkingSlot) throws PolicyIsNoFoundException {
+	private ParkingBill generateParkingBill(ParkingBill parkingBill, ParkingSlot parkingSlot)
+			throws PolicyIsNoFoundException {
 		if (parkingSlot.getPolicy().equalsIgnoreCase(AppConstants.FIXED)) {
 			double amt = parkingSlot.getFixedAmount()
 					* (parkingHours(parkingBill.getStartTime(), parkingBill.getEndTime()));
@@ -145,6 +156,7 @@ public class ParkingServiceImpl implements ParkingService {
 					* parkingHours(parkingBill.getStartTime(), parkingBill.getEndTime());
 			parkingBill.setTotalBill(amt);
 		} else {
+			logger.error(ErrorMessages.POLICY_NOT_FOUND);
 			throw new PolicyIsNoFoundException();
 		}
 		return parkingBill;
@@ -152,5 +164,13 @@ public class ParkingServiceImpl implements ParkingService {
 
 	private double parkingHours(LocalDateTime start, LocalDateTime end) {
 		return end.getHour() - start.getHour();
+	}
+
+	private boolean validateExistingEntry(String carNumber) {
+		Optional<ParkingSlot> availableEntry = parkingSlotRepository.findByParkedCar(carNumber);
+		if (availableEntry.isPresent()) {
+			return true;
+		}
+		return false;
 	}
 }

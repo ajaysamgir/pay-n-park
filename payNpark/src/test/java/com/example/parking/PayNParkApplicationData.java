@@ -1,5 +1,7 @@
 package com.example.parking;
 
+import java.time.LocalDateTime;
+
 import com.example.parking.dto.CarDetails;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.dto.ParkingInitializer;
@@ -8,7 +10,7 @@ import com.example.parking.dto.PolicyDetails;
 public class PayNParkApplicationData {
 
 	public static ParkingSlot getParkingSlotData() {
-		return new ParkingSlot("Standard", true, "fixed", 10, 10);
+		return new ParkingSlot("Standard", true, "fixed", 10, 10, LocalDateTime.now());
 	}
 
 	public static CarDetails getCarDetailsData() {
