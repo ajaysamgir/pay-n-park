@@ -115,6 +115,7 @@ public class ParkingServiceImpl implements ParkingService {
 				bill = generateParkingBill(bill, parkingSlot.get());
 
 				parkingSlot.get().setFree(true);
+				parkingSlot.get().setParkedCar(null);
 				parkingSlotRepository.save(parkingSlot.get());
 
 				bill.setParkingSlot(parkingSlot.get());

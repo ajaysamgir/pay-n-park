@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -36,21 +38,26 @@ public class ParkingController {
 
 	@Value("${parking.policies}")
 	private String[] policies;
-	
+
 	@Value("${parking.slotTypes}")
 	private String[] slotTypes;
 
 	private boolean isInitialized;
+
+	private static final Logger logger = LoggerFactory.getLogger(ParkingController.class);
 
 	@PostMapping("/initialize")
 	public ResponseEntity<ParkingInitializer> initializeTollParking(@RequestBody ParkingInitializer parkingSlotConfig)
 			throws InvalidCapacityException, AllReadyInitializedException, PolicyIsNoFoundException {
 		if (!isInitialized) {
 			if (!validParkingCapacity(parkingSlotConfig)) {
+				logger.error("API - api/initialize " + ErrorMessages.INVALID_CAPACITY_ERROR + ", "
+						+ ErrorMessages.INVALID_CAPACITY_HINT);
 				throw new InvalidCapacityException(parkingSlotConfig.getTotalCapacity());
 			}
 
 			if (!policyMatch(parkingSlotConfig.getPolicy())) {
+				logger.error("API - api/initialize " + ErrorMessages.POLICY_NOT_FOUND);
 				throw new PolicyIsNoFoundException();
 			}
 			Optional<ParkingInitializer> response = Optional
@@ -58,11 +65,13 @@ public class ParkingController {
 
 			if (response.isPresent()) {
 				isInitialized = true;
+				logger.info("Application initialization done successfully!");
 				return ResponseEntity.ok(response.get());
 			}
 			return ResponseEntity.notFound().build();
 
 		} else {
+			logger.error("API - api/initialize " + ErrorMessages.SLOTS_ALREADY_INITIALIZED);
 			throw new AllReadyInitializedException();
 		}
 	}
@@ -71,8 +80,10 @@ public class ParkingController {
 	public ResponseEntity<List<ParkingSlotDto>> getParkingSlotDetail() throws SlotsNotInitializedException {
 		Optional<List<ParkingSlotDto>> response = parkingTollService.getAllParkingSlots();
 		if (response.isEmpty()) {
+			logger.error("API - api/slots " + ErrorMessages.SLOT_NOT_INITIALIZED);
 			throw new SlotsNotInitializedException();
 		}
+		logger.info("Get all parking slot list successfully!");
 		return ResponseEntity.ok(response.get());
 	}
 
@@ -82,15 +93,18 @@ public class ParkingController {
 
 		if (isInitialized) {
 			if (!validatePolicy(policyDetails.getPolicyType())) {
+				logger.error("API - api/applypolicy " + ErrorMessages.POLICY_NOT_FOUND);
 				throw new PolicyIsNoFoundException();
 			}
 			Optional<ParkingSlotDto> parkingSlot = parkingTollService.applyPolicy(policyDetails);
 
 			if (parkingSlot.isPresent()) {
+				logger.info("Policy applied successfully!");
 				return ResponseEntity.ok(parkingSlot.get());
 			}
 			return ResponseEntity.notFound().build();
 		}
+		logger.error("API - api/applypolicy " + ErrorMessages.APP_NOT_INITIATED);
 		throw new AppNotInitializedException(ErrorMessages.APP_NOT_INITIATED);
 	}
 
@@ -100,10 +114,13 @@ public class ParkingController {
 			Optional<ParkingSlotDto> parkingSlot = parkingTollService.getAvailableParkingSlot(carDetails);
 
 			if (parkingSlot.isPresent()) {
+				logger.info(
+						"Parking slot allocated Successfully!" + " Car Number: " + parkingSlot.get().getParkedCar());
 				return ResponseEntity.ok(parkingSlot.get());
 			}
 			return ResponseEntity.notFound().build();
 		}
+		logger.error("API - api/entry " + ErrorMessages.APP_NOT_INITIATED);
 		throw new AppNotInitializedException(ErrorMessages.APP_NOT_INITIATED);
 	}
 
@@ -111,10 +128,14 @@ public class ParkingController {
 	public ResponseEntity<ParkingBillDto> leaveParking(@PathVariable("carNumber") String carNumber) throws Exception {
 		if (isInitialized) {
 			Optional<ParkingBillDto> parkingBillResponse = parkingTollService.leaveParking(carNumber);
-			if (parkingBillResponse.isPresent())
+			if (parkingBillResponse.isPresent()) {
+				logger.info(
+						"Parking slot allocated Successfully!" + " Car Number: " + parkingSlot.get().getParkedCar());
 				return ResponseEntity.ok(parkingBillResponse.get());
+			}
 			return ResponseEntity.notFound().build();
 		}
+		logger.error("API - api/exit " + ErrorMessages.APP_NOT_INITIATED);
 		throw new AppNotInitializedException(ErrorMessages.APP_NOT_INITIATED);
 	}
 
