@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.parking.dto.CarDetails;
+import com.example.parking.dto.ParkingBillDto;
 import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.PolicyDetails;
@@ -25,7 +26,6 @@ import com.example.parking.exception.ErrorMessages;
 import com.example.parking.exception.InvalidCapacityException;
 import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.SlotsNotInitializedException;
-import com.example.parking.model.ParkingBill;
 import com.example.parking.service.ParkingService;
 
 @RestController
@@ -108,9 +108,9 @@ public class ParkingController {
 	}
 
 	@GetMapping("/exit/{carNumber}")
-	public ResponseEntity<ParkingBill> leaveParking(@PathVariable("carNumber") String carNumber) throws Exception {
+	public ResponseEntity<ParkingBillDto> leaveParking(@PathVariable("carNumber") String carNumber) throws Exception {
 		if (isInitialized) {
-			Optional<ParkingBill> parkingBillResponse = parkingTollService.leaveParking(carNumber);
+			Optional<ParkingBillDto> parkingBillResponse = parkingTollService.leaveParking(carNumber);
 			if (parkingBillResponse.isPresent())
 				return ResponseEntity.ok(parkingBillResponse.get());
 			return ResponseEntity.notFound().build();

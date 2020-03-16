@@ -2,7 +2,7 @@ package com.example.parking.dto;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Column;
+import com.example.parking.model.ParkingBill;
 
 public class ParkingBillDto {
 
@@ -12,19 +12,19 @@ public class ParkingBillDto {
 
 	private ParkingSlotDto parkingSlot;
 
-	@Column(name = "price", nullable = false)
-	private Double price;
+	private Double billAmount;
 
-	@Column(name = "start_time", nullable = false)
 	private LocalDateTime startTime;
 
-	@Column(name = "end_time", nullable = false)
 	private LocalDateTime endTime;
 
-	public ParkingBillDto(String vehicleNo, ParkingSlotDto parkingSlot, LocalDateTime time) {
+	public ParkingBillDto(String vehicleNo, ParkingSlotDto parkingSlot, Double totalPrice, LocalDateTime startTime,
+			LocalDateTime endTime) {
 		this.vehicleNo = vehicleNo;
 		this.parkingSlot = parkingSlot;
-		this.startTime = time;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.billAmount = totalPrice;
 	}
 
 	public Long getId() {
@@ -51,14 +51,6 @@ public class ParkingBillDto {
 		this.parkingSlot = parkingSlot;
 	}
 
-	public Double getPrice() {
-		return price;
-	}
-
-	public void setPrice(Double price) {
-		this.price = price;
-	}
-
 	public LocalDateTime getStartTime() {
 		return startTime;
 	}
@@ -73,6 +65,20 @@ public class ParkingBillDto {
 
 	public void setEndTime(LocalDateTime endTime) {
 		this.endTime = endTime;
+	}
+
+	public Double getBillAmount() {
+		return billAmount;
+	}
+
+	public void setBillAmount(Double billAmount) {
+		this.billAmount = billAmount;
+	}
+
+	public static ParkingBillDto fromDomain(ParkingBill bill) {
+		ParkingSlotDto parkingSlotDto = ParkingSlotDto.fromDomain(bill.getParkingSlot());
+		return new ParkingBillDto(bill.getCarNumber(), parkingSlotDto, bill.getTotalBill(), bill.getStartTime(),
+				bill.getEndTime());
 	}
 
 }

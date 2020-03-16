@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.example.parking.AppConstants;
 import com.example.parking.dto.CarDetails;
+import com.example.parking.dto.ParkingBillDto;
 import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.PolicyDetails;
@@ -75,12 +76,12 @@ public class ParkingServiceImpl implements ParkingService {
 		double rentPerHour = tollParkingInitializer.getRentPerHour();
 		double fixedRateAmt = tollParkingInitializer.getFixedRateAmount();
 
-		IntStream.rangeClosed(1, countOfStandardCarSlot).forEach(i -> parkingSlotRepository
-				.save(new ParkingSlot("Standard", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
-		IntStream.rangeClosed(1, countOfE20KWCarSlot).forEach(i -> parkingSlotRepository
-				.save(new ParkingSlot("Electric20KW", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
-		IntStream.rangeClosed(1, countOfE50KWCarSlot).forEach(i -> parkingSlotRepository
-				.save(new ParkingSlot("Electric50KW", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
+		IntStream.rangeClosed(1, countOfStandardCarSlot).forEach(i -> parkingSlotRepository.save(
+				new ParkingSlot("Standard", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
+		IntStream.rangeClosed(1, countOfE20KWCarSlot).forEach(i -> parkingSlotRepository.save(
+				new ParkingSlot("Electric20KW", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
+		IntStream.rangeClosed(1, countOfE50KWCarSlot).forEach(i -> parkingSlotRepository.save(
+				new ParkingSlot("Electric50KW", true, defaultPolicy, rentPerHour, fixedRateAmt, LocalDateTime.now())));
 		logger.info("Parking slots initialized successfully!");
 		return tollParkingInitializer;
 	}
@@ -99,7 +100,7 @@ public class ParkingServiceImpl implements ParkingService {
 	}
 
 	@Override
-	public Optional<ParkingBill> leaveParking(String carNumber)
+	public Optional<ParkingBillDto> leaveParking(String carNumber)
 			throws CarNotFoundInSlotException, PolicyIsNoFoundException {
 		Optional<ParkingSlot> parkingSlot = parkingSlotRepository.findByParkedCar(carNumber);
 		synchronized (ParkingServiceImpl.class) {
@@ -122,7 +123,7 @@ public class ParkingServiceImpl implements ParkingService {
 
 				logger.info("Exit process done, parking slot marked as free and total bill of vehicle : " + carNumber
 						+ " is generated");
-				return Optional.of(bill);
+				return Optional.of(ParkingBillDto.fromDomain(bill));
 			}
 
 		}
@@ -131,15 +132,20 @@ public class ParkingServiceImpl implements ParkingService {
 	}
 
 	@Override
-	public Optional<ParkingSlotDto> applyPolicy(PolicyDetails policyDetails) throws SlotNotFoundException {
+	public Optional<ParkingSlotDto> applyPolicy(PolicyDetails policyDetails) throws SlotNotFoundException, PolicyIsNoFoundException {
 		Optional<ParkingSlot> parkingSlot = parkingSlotRepository.findAll().stream()
 				.filter(p -> p.getId() == policyDetails.getParkingSlotNo()).findFirst();
 		if (parkingSlot.isPresent()) {
-			parkingSlot.get().setPolicy(policyDetails.getPolicyType());
-			parkingSlotRepository.save(parkingSlot.get());
+			if (policyDetails.getPolicyType().equalsIgnoreCase(AppConstants.FIXED)
+					|| policyDetails.getPolicyType().equalsIgnoreCase(AppConstants.HOURLY)) {
+				parkingSlot.get().setPolicy(policyDetails.getPolicyType());
+				parkingSlotRepository.save(parkingSlot.get());
 
-			logger.info("Policy updated successfully!");
-			return Optional.of(ParkingSlotDto.fromDomain(parkingSlot.get()));
+				logger.info("Policy updated successfully!");
+				return Optional.of(ParkingSlotDto.fromDomain(parkingSlot.get()));
+			} else {
+				throw new PolicyIsNoFoundException();
+			}
 		}
 		logger.error(ErrorMessages.SLOT_IS_NOT_FOUND + " : Update Policy");
 		throw new SlotNotFoundException(ErrorMessages.SLOT_IS_NOT_FOUND);
@@ -163,7 +169,8 @@ public class ParkingServiceImpl implements ParkingService {
 	}
 
 	private double parkingHours(LocalDateTime start, LocalDateTime end) {
-		return end.getHour() - start.getHour();
+		double count = end.getHour() - start.getHour();
+		return count == 0 ? 1 : count;
 	}
 
 	private boolean validateExistingEntry(String carNumber) {

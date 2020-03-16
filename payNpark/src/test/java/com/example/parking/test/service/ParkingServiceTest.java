@@ -23,6 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import com.example.parking.AppConstants;
 import com.example.parking.PayNParkApplicationData;
 import com.example.parking.dto.CarDetails;
+import com.example.parking.dto.ParkingBillDto;
 import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.PolicyDetails;
@@ -32,7 +33,6 @@ import com.example.parking.exception.ErrorMessages;
 import com.example.parking.exception.InvalidCarTypeException;
 import com.example.parking.exception.PolicyIsNoFoundException;
 import com.example.parking.exception.SlotNotFoundException;
-import com.example.parking.model.ParkingBill;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.repository.ParkingBillRepository;
 import com.example.parking.repository.ParkingSlotRepository;
@@ -155,11 +155,11 @@ public class ParkingServiceTest {
 		parkingSlot.setFree(false);
 		when(parkingSlotRepository.findByParkedCar(carNumber)).thenReturn(Optional.of(parkingSlot));
 
-		Optional<ParkingBill> bill = service.leaveParking(carNumber);
+		Optional<ParkingBillDto> bill = service.leaveParking(carNumber);
 
 		assertEquals("MH12AD9415", bill.get().getParkingSlot().getParkedCar());
 		assertEquals(true, bill.get().getParkingSlot().getFree());
-		assertNotNull(bill.get().getTotalBill());
+		assertNotNull(bill.get().getBillAmount());
 	}
 
 	@Test
@@ -173,11 +173,11 @@ public class ParkingServiceTest {
 		parkingSlot.setPolicy(AppConstants.HOURLY);
 		when(parkingSlotRepository.findByParkedCar(carNumber)).thenReturn(Optional.of(parkingSlot));
 
-		Optional<ParkingBill> bill = service.leaveParking(carNumber);
+		Optional<ParkingBillDto> bill = service.leaveParking(carNumber);
 
 		assertEquals("MH12AD9415", bill.get().getParkingSlot().getParkedCar());
 		assertEquals(true, bill.get().getParkingSlot().getFree());
-		assertNotNull(bill.get().getTotalBill());
+		assertNotNull(bill.get().getBillAmount());
 	}
 
 	@Test
@@ -226,9 +226,10 @@ public class ParkingServiceTest {
 	 * Apply policy test
 	 * 
 	 * @throws SlotNotFoundException
+	 * @throws PolicyIsNoFoundException 
 	 */
 	@Test
-	public void applyPolicySuccessTest() throws SlotNotFoundException {
+	public void applyPolicySuccessTest() throws SlotNotFoundException, PolicyIsNoFoundException {
 		PolicyDetails policyDetails = PayNParkApplicationData.getPolicyDetailsData();
 		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
 		parkingSlot.setId(1L);
@@ -250,5 +251,17 @@ public class ParkingServiceTest {
 		when(parkingSlotRepository.findAll()).thenReturn(Arrays.asList(parkingSlot));
 
 		assertThrows(SlotNotFoundException.class,() -> service.applyPolicy(policyDetails));
+	}
+	
+	@Test
+	public void applyPolicyWithPolicyIsNoFoundExceptionTest() throws SlotNotFoundException {
+		PolicyDetails policyDetails = PayNParkApplicationData.getPolicyDetailsData();
+		policyDetails.setParkingSlotNo(1L);
+		policyDetails.setPolicyType("SomethingElse");
+		ParkingSlot parkingSlot = PayNParkApplicationData.getParkingSlotData();
+		parkingSlot.setId(1L);
+		when(parkingSlotRepository.findAll()).thenReturn(Arrays.asList(parkingSlot));
+
+		assertThrows(PolicyIsNoFoundException.class,() -> service.applyPolicy(policyDetails));
 	}
 }
