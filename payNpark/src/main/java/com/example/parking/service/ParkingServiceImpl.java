@@ -9,7 +9,6 @@ import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.example.parking.AppConstants;
 import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingBillDto;
 import com.example.parking.dto.ParkingInitializer;

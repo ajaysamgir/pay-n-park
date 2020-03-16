@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.example.parking.AppConstants;
 import com.example.parking.PayNParkApplicationData;
 import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingBillDto;
@@ -36,6 +35,7 @@ import com.example.parking.exception.SlotNotFoundException;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.repository.ParkingBillRepository;
 import com.example.parking.repository.ParkingSlotRepository;
+import com.example.parking.service.AppConstants;
 import com.example.parking.service.ParkingService;
 import com.example.parking.service.ParkingServiceImpl;
 
