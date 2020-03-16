@@ -130,7 +130,7 @@ public class ParkingController {
 			Optional<ParkingBillDto> parkingBillResponse = parkingTollService.leaveParking(carNumber);
 			if (parkingBillResponse.isPresent()) {
 				logger.info(
-						"Parking slot allocated Successfully!" + " Car Number: " + parkingSlot.get().getParkedCar());
+						"Exit process done successfully!" + " Car Number: " + carNumber);
 				return ResponseEntity.ok(parkingBillResponse.get());
 			}
 			return ResponseEntity.notFound().build();
