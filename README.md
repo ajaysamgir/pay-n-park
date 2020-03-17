@@ -7,13 +7,12 @@
 - Spring Boot
 - H2 in-memory database
 - JUnit
-- Cobertura
+- Jacoco
 
 ## Setup and commands
 - mvn clean install
 - mvn spring-boot:run / directly from STS
 - mvn test (unit testing and code coverage)
-
 ## REST APIs
 1 . /api/initialize
 - This api use for initialize application with default values like total parking slots, rates etc.
