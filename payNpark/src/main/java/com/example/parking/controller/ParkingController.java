@@ -60,8 +60,7 @@ public class ParkingController {
 				logger.error("API - api/initialize " + ErrorMessages.POLICY_NOT_FOUND);
 				throw new PolicyIsNoFoundException();
 			}
-			Optional<ParkingInitializer> response = Optional
-					.of(parkingTollService.initialize(parkingSlotConfig));
+			Optional<ParkingInitializer> response = Optional.of(parkingTollService.initialize(parkingSlotConfig));
 
 			if (response.isPresent()) {
 				isInitialized = true;
@@ -78,13 +77,11 @@ public class ParkingController {
 
 	@GetMapping("/slots")
 	public ResponseEntity<List<ParkingSlotDto>> getParkingSlotDetail() throws SlotsNotInitializedException {
-		Optional<List<ParkingSlotDto>> response = parkingTollService.getAllParkingSlots();
-		if (response.isEmpty()) {
-			logger.error("API - api/slots " + ErrorMessages.SLOT_NOT_INITIALIZED);
-			throw new SlotsNotInitializedException();
-		}
+		List<ParkingSlotDto> response = parkingTollService.getAllParkingSlots()
+				.orElseThrow(() -> new SlotsNotInitializedException());
+
 		logger.info("Get all parking slot list successfully!");
-		return ResponseEntity.ok(response.get());
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/applypolicy")
@@ -129,8 +126,7 @@ public class ParkingController {
 		if (isInitialized) {
 			Optional<ParkingBillDto> parkingBillResponse = parkingTollService.leaveParking(carNumber);
 			if (parkingBillResponse.isPresent()) {
-				logger.info(
-						"Exit process done successfully!" + " Car Number: " + carNumber);
+				logger.info("Exit process done successfully!" + " Car Number: " + carNumber);
 				return ResponseEntity.ok(parkingBillResponse.get());
 			}
 			return ResponseEntity.notFound().build();

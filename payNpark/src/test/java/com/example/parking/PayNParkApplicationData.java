@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.parking.dto.CarDetails;
+import com.example.parking.dto.ParkingBillDto;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
@@ -36,10 +37,15 @@ public class PayNParkApplicationData {
 	}
 
 	public static List<ParkingSlotDto> getParkingSlotDataList() {
-		ParkingSlotDto parkingSlot = ParkingSlotDto.fromDomain(PayNParkApplicationData.getParkingSlotData());
+		ParkingSlotDto parkingSlot = ParkingSlotDto.fromDomain(getParkingSlotData());
 		List<ParkingSlotDto> slots = new ArrayList<>();
 		slots.add(parkingSlot);
 		return slots;
+	}
+
+	public static ParkingBillDto getParkingBillData() {
+		return new ParkingBillDto("MH12AD1990", ParkingSlotDto.fromDomain(getParkingSlotData()), 100.0,
+				LocalDateTime.now(), LocalDateTime.now());
 	}
 
 }

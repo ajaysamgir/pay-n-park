@@ -27,6 +27,9 @@ public class ParkingBillDto {
 		this.billAmount = totalPrice;
 	}
 
+	public ParkingBillDto() {
+	}
+
 	public Long getId() {
 		return id;
 	}
