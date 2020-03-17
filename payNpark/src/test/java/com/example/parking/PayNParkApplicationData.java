@@ -1,10 +1,13 @@
 package com.example.parking;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.example.parking.dto.CarDetails;
 import com.example.parking.model.ParkingSlot;
 import com.example.parking.dto.ParkingInitializer;
+import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.dto.PolicyDetails;
 
 public class PayNParkApplicationData {
@@ -30,6 +33,13 @@ public class PayNParkApplicationData {
 		policyDetails.setPolicyType("Hourly");
 		policyDetails.setRate(15.0);
 		return policyDetails;
+	}
+
+	public static List<ParkingSlotDto> getParkingSlotDataList() {
+		ParkingSlotDto parkingSlot = ParkingSlotDto.fromDomain(PayNParkApplicationData.getParkingSlotData());
+		List<ParkingSlotDto> slots = new ArrayList<>();
+		slots.add(parkingSlot);
+		return slots;
 	}
 
 }

@@ -157,7 +157,6 @@ public class ParkingServiceTest {
 
 		Optional<ParkingBillDto> bill = service.leaveParking(carNumber);
 
-		assertEquals("MH12AD9415", bill.get().getParkingSlot().getParkedCar());
 		assertEquals(true, bill.get().getParkingSlot().getFree());
 		assertNotNull(bill.get().getBillAmount());
 	}
@@ -175,7 +174,6 @@ public class ParkingServiceTest {
 
 		Optional<ParkingBillDto> bill = service.leaveParking(carNumber);
 
-		assertEquals("MH12AD9415", bill.get().getParkingSlot().getParkedCar());
 		assertEquals(true, bill.get().getParkingSlot().getFree());
 		assertNotNull(bill.get().getBillAmount());
 	}

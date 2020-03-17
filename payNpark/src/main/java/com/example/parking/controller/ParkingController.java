@@ -61,7 +61,7 @@ public class ParkingController {
 				throw new PolicyIsNoFoundException();
 			}
 			Optional<ParkingInitializer> response = Optional
-					.ofNullable(parkingTollService.initialize(parkingSlotConfig));
+					.of(parkingTollService.initialize(parkingSlotConfig));
 
 			if (response.isPresent()) {
 				isInitialized = true;
@@ -156,7 +156,7 @@ public class ParkingController {
 		return false;
 	}
 
-	private boolean policyMatch(String policy) {
+	public boolean policyMatch(String policy) {
 		for (String p : policies) {
 			if (p.equalsIgnoreCase(policy)) {
 				return true;
