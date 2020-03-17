@@ -1,8 +1,15 @@
 package com.example.parking.test.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,10 +27,13 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.parking.PayNParkApplicationData;
 import com.example.parking.controller.ParkingController;
+import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingInitializer;
+import com.example.parking.dto.ParkingSlotDto;
 import com.example.parking.exception.AllReadyInitializedException;
 import com.example.parking.exception.InvalidCapacityException;
 import com.example.parking.exception.PolicyIsNoFoundException;
+import com.example.parking.exception.SlotsNotInitializedException;
 import com.example.parking.service.ParkingServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -113,5 +123,29 @@ public class ParkingControllerTest {
 		assertThat(responseEntity.getStatusCode().is2xxSuccessful());
 
 		assertThrows(AllReadyInitializedException.class, () -> parkingController.initializeTollParking(init));
+	}
+
+	/**
+	 * Get all slots
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getSlotsDataSuccessTest() throws Exception {
+		ReflectionTestUtils.setField(parkingController, "isInitialized", true);
+
+		when(parkingService.getAllParkingSlots())
+				.thenReturn(Optional.of(PayNParkApplicationData.getParkingSlotDataList()));
+		ResponseEntity<List<ParkingSlotDto>> responseEntity = parkingController.getParkingSlotDetail();
+
+		assertFalse(responseEntity.getBody().isEmpty());
+		assertEquals(responseEntity.getBody().size(), 1);
+	}
+
+	@Test
+	public void getSlotsDataEmptyTest() throws Exception {
+		ReflectionTestUtils.setField(parkingController, "isInitialized", false);
+		when(parkingService.getAllParkingSlots()).thenReturn(Optional.empty());
+		assertThrows(SlotsNotInitializedException.class, () -> parkingController.getParkingSlotDetail());
 	}
 }
