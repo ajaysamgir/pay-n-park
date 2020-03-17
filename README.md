@@ -12,7 +12,7 @@
 ## Setup and commands
 - mvn clean install
 - mvn spring-boot:run / directly from STS
-- mvn cobertura:cobertura (Code Coverage)
+- mvn test (unit testing and code coverage)
 
 ## REST APIs
 1 . /api/initialize

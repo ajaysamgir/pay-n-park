@@ -18,8 +18,9 @@ public class ParkingBillDto {
 
 	private LocalDateTime endTime;
 
-	public ParkingBillDto(String vehicleNo, ParkingSlotDto parkingSlot, Double totalPrice, LocalDateTime startTime,
+	public ParkingBillDto(Long id, String vehicleNo, ParkingSlotDto parkingSlot, Double totalPrice, LocalDateTime startTime,
 			LocalDateTime endTime) {
+		this.id = id;
 		this.vehicleNo = vehicleNo;
 		this.parkingSlot = parkingSlot;
 		this.startTime = startTime;
@@ -80,7 +81,7 @@ public class ParkingBillDto {
 
 	public static ParkingBillDto fromDomain(ParkingBill bill) {
 		ParkingSlotDto parkingSlotDto = ParkingSlotDto.fromDomain(bill.getParkingSlot());
-		return new ParkingBillDto(bill.getCarNumber(), parkingSlotDto, bill.getTotalBill(), bill.getStartTime(),
+		return new ParkingBillDto(bill.getId(), bill.getCarNumber(), parkingSlotDto, bill.getTotalBill(), bill.getStartTime(),
 				bill.getEndTime());
 	}
 

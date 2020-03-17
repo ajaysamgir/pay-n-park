@@ -44,7 +44,7 @@ public class PayNParkApplicationData {
 	}
 
 	public static ParkingBillDto getParkingBillData() {
-		return new ParkingBillDto("MH12AD1990", ParkingSlotDto.fromDomain(getParkingSlotData()), 100.0,
+		return new ParkingBillDto(1L,"MH12AD1990", ParkingSlotDto.fromDomain(getParkingSlotData()), 100.0,
 				LocalDateTime.now(), LocalDateTime.now());
 	}
 

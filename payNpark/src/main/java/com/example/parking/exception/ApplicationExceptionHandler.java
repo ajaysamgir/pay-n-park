@@ -43,9 +43,21 @@ public class ApplicationExceptionHandler {
 		} else if (ex instanceof AppNotInitializedException) {
 			AppNotInitializedException exp = (AppNotInitializedException) ex;
 			return handleAppNotInitializedException(exp, request);
+		} else if (ex instanceof CarNotFoundInSlotException) {
+			CarNotFoundInSlotException exp = (CarNotFoundInSlotException) ex;
+			return handleCarNotFoundInSlotException(exp, request);
 		} else {
 			return handleExceptionInternal(ex, request);
 		}
+	}
+
+	private ResponseEntity<CustomErrorHandler> handleCarNotFoundInSlotException(CarNotFoundInSlotException exp,
+			WebRequest request) {
+		List<String> details = new ArrayList<>();
+		details.add(exp.getMessage());
+		CustomErrorHandler error = new CustomErrorHandler(ErrorMessages.CAR_NOT_FOUND_IN_SLOT, details,
+				HttpStatus.NOT_FOUND, new Date().toString());
+		return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
 	}
 
 	private ResponseEntity<CustomErrorHandler> handleAppNotInitializedException(AppNotInitializedException exp,
