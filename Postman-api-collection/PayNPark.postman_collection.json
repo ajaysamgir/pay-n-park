@@ -1,0 +1,170 @@
+{
+	"info": {
+		"_postman_id": "34973e41-d423-4f7b-aa6e-a4daab683220",
+		"name": "PayNPark",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8080/api/initialize",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"totalCapacity\" : 30,\n\t\"electric20KWCar\": 10,\n\t\"electric50KWCar\":10,\n\t\"standardCar\":10,\n\t\"policy\" : \"fixed\",\n\t\"rentPerHour\" : 10,\n\t\"fixedRateAmount\" : 15\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/initialize",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"initialize"
+					]
+				},
+				"description": "intializaion operation"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/slots",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"carType\" : \"electric20KWCar\",\n\t\"carNumber\" : \"MH12AD9417\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/slots",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"slots"
+					]
+				},
+				"description": "retrive all parking slot details"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/entry",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"carType\" : \"Electric20KW\",\n\t\"carNumber\" : \"MH12AD9417\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/entry",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"entry"
+					]
+				},
+				"description": "Allocate parking to cars"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/exit/MH12AD9417",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"totalCapacity\" : 30,\n\t\"electric20KWCar\": 10,\n\t\"electric50KWCar\":10,\n\t\"standardCar\":10,\n\t\"policy\" : \"fixed\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/exit/MH12AD9417",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"exit",
+						"MH12AD9417"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/applypolicy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"policyType\" : \"Hourly\",\n\t\"parkingSlotNo\" : 1\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/applypolicy",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"applypolicy"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
