@@ -7,12 +7,12 @@
 - Spring Boot
 - H2 in-memory database
 - JUnit
-- Cobertura
+- Jacoco
 
 ## Setup and commands
 - mvn clean install
 - mvn spring-boot:run / directly from STS
-- mvn cobertura:cobertura (Code Coverage)
+- mvn test (Code Coverage)
 
 ## REST APIs
 1 . /api/initialize
