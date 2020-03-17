@@ -31,6 +31,7 @@ import com.example.parking.dto.CarDetails;
 import com.example.parking.dto.ParkingBillDto;
 import com.example.parking.dto.ParkingInitializer;
 import com.example.parking.dto.ParkingSlotDto;
+import com.example.parking.dto.PolicyDetails;
 import com.example.parking.exception.AllReadyInitializedException;
 import com.example.parking.exception.AppNotInitializedException;
 import com.example.parking.exception.CarEntryAllreayExistException;
@@ -176,10 +177,10 @@ public class ParkingControllerTest {
 
 	@Test
 	public void getAvailableSlotsWhenNotInitializedTest() throws Exception {
-		CarDetails carDetails = PayNParkApplicationData.getCarDetailsData();
 		ReflectionTestUtils.setField(parkingController, "isInitialized", false);
 
-		assertThrows(AppNotInitializedException.class, () -> parkingController.getParkingSlot(carDetails));
+		assertThrows(AppNotInitializedException.class,
+				() -> parkingController.getParkingSlot(PayNParkApplicationData.getCarDetailsData()));
 	}
 
 	/**
@@ -205,5 +206,40 @@ public class ParkingControllerTest {
 		ReflectionTestUtils.setField(parkingController, "isInitialized", false);
 
 		assertThrows(AppNotInitializedException.class, () -> parkingController.leaveParking(carNumber));
+	}
+
+	/**
+	 * apply policy testcases
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void applyPolicySuccessTest() throws Exception {
+		ReflectionTestUtils.setField(parkingController, "isInitialized", true);
+		PolicyDetails policyDetails = PayNParkApplicationData.getPolicyDetailsData();
+		ParkingSlotDto slot = ParkingSlotDto.fromDomain(PayNParkApplicationData.getParkingSlotData());
+		
+		when(parkingService.applyPolicy(policyDetails)).thenReturn(Optional.of(slot));
+		
+		ResponseEntity<ParkingSlotDto> result = parkingController.applyPolicyOnParkingSlot(policyDetails);
+		assertThat(result.getBody().getFree().equals(true));
+		assertThat(result.getBody().getParkingSlotType().equalsIgnoreCase("Fixed"));
+		assertThat(result.getBody().getFree().equals(true));
+	}
+
+	@Test
+	public void applyPolicyWithInvalidPolicyTest() throws Exception {
+		ReflectionTestUtils.setField(parkingController, "isInitialized", true);
+		PolicyDetails details = PayNParkApplicationData.getPolicyDetailsData();
+		details.setPolicyType("SomethingElse");
+		assertThrows(PolicyIsNoFoundException.class,
+				() -> parkingController.applyPolicyOnParkingSlot(details));
+	}
+
+	@Test
+	public void applyPolicyWhenAppNotInitializedTest() throws Exception {
+		ReflectionTestUtils.setField(parkingController, "isInitialized", false);
+		assertThrows(AppNotInitializedException.class,
+				() -> parkingController.applyPolicyOnParkingSlot(PayNParkApplicationData.getPolicyDetailsData()));
 	}
 }
